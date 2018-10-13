@@ -2,16 +2,15 @@
 import errno
 import os
 import sys
-
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, '../../../buscador_scripts/')
-
-from utils import *
+# from utils import *
 import pandas as pd
 import codecs
 import csv
 import commands
 from datetime import datetime
+
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, '../../../buscador_scripts/')
 
 
 class CapesDocentes(object):
@@ -23,6 +22,8 @@ class CapesDocentes(object):
         self.nome_arquivo = nome_arquivo
         self.input_lenght = 0
         self.output_length = 0
+        # conta as linhas corretas dos arquivos na pasta download. é usado para subtrair as linhas de saída.
+        self.qtde_linhas_corretas = 0
         self.colunas = [
             'AN_BASE',
             'NM_GRANDE_AREA_CONHECIMENTO',
@@ -62,7 +63,6 @@ class CapesDocentes(object):
 
         ]
 
-
     def pega_arquivo_nome(self):
 
         var = '/var/tmp/solr_front/collections/capes/docentes/download/'
@@ -72,11 +72,12 @@ class CapesDocentes(object):
                 if file in self.arquivos:
 
                     arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
-                    self.input_lenght += int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
-                    print 'Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1)
+                    self.input_lenght = int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
+                    print('Lendo o arquivo {}.......com o total de {} linhas.'.format(file, self.input_lenght - 1))
                     df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
-
-        #import pdb;pdb.set_trace()  #para testar o código
+                    self.qtde_linhas_corretas += (self.input_lenght - 1)
+        print 'Arquivo de entrada possui {} linhas de informacao'.format(self.qtde_linhas_corretas)
+        # import pdb;pdb.set_trace()  #para testar o código
         df_concat = pd.concat(df_auxiliar)
         return df_concat
 
@@ -102,16 +103,17 @@ class CapesDocentes(object):
         with open(destino_transform + log_file, 'w') as log:
             log.write('Log gerado em {}'.format(self.date.strftime("%Y-%m-%d %H:%M")))
             log.write("\n")
-            log.write('Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1))
+            log.write('Arquivo de entrada possui {} linhas de informacao'.format(self.qtde_linhas_corretas))
             log.write("\n")
             log.write('Arquivo de saida possui {} linhas de informacao'.format(int(self.output_length) - 1))
-        print('Processamento CAPES {} finalizado, arquivo de log gerado em {}'.format(self.nome_arquivo, (destino_transform + log_file)))
+        print('Processamento CAPES {} finalizado, arquivo de log gerado em {}'.format(self.nome_arquivo,
+                                                                                      (destino_transform + log_file)))
+
 
 def capes_docentes_transform():
-
-    PATH_ORIGEM = '/var/tmp/solr_front/collections/capes/docentes/download'
+    path_origem = '/var/tmp/solr_front/collections/capes/docentes/download'
     try:
-        arquivos = os.listdir(PATH_ORIGEM)
+        arquivos = os.listdir(path_origem)
         arquivos.sort()
         arquivo_inicial = arquivos[0]
         nome_arquivo = arquivo_inicial.split('_')[0]

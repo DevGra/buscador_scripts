@@ -160,11 +160,13 @@ def create_one_dict(dic):
             else:
                 dict_f[k] = v
 
-    return dict_f
+    return dict_f # descomentar depois, esta gerando um erro
 
 #print create_one_dict(dicionario)
 
+
 # função para download de um ano especifico ou todos os anos
+
 def download_um_ou_todos_anos(ano_ref, funcao_download, all_links):
 
     if ano_ref != '0':
@@ -184,4 +186,4 @@ def download_um_ou_todos_anos(ano_ref, funcao_download, all_links):
             except KeyError:
                 print('Ano invalido digite ano entre (2009~2016)')
 
-    return dict_f
+
