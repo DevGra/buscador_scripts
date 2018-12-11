@@ -8,12 +8,12 @@ sys.path.insert(0, '../../../buscador_scripts/')
 
 from settings import BASE_PATH_DATA
 from utils import *
+
 import pandas as pd
 import codecs
 import csv
 import commands
 from datetime import datetime
-
 
 class CapesDocentes(object):
     """
@@ -41,6 +41,8 @@ class CapesDocentes(object):
         self.nome_arquivo = nome_arquivo
         self.input_lenght = 0
         self.output_length = 0
+        # conta as linhas corretas dos arquivos na pasta download. é usado para subtrair as linhas de saída.
+        self.qtde_linhas_corretas = 0
         self.colunas = [
             'AN_BASE',
             'NM_GRANDE_AREA_CONHECIMENTO',
@@ -98,6 +100,7 @@ class CapesDocentes(object):
                     df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
                     #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=3000, chunksize=3000, encoding='latin-1', low_memory=False)
         #import pdb;pdb.set_trace()  #para testar o código
+
         df_concat = pd.concat(df_auxiliar)
         return df_concat
 
@@ -142,12 +145,11 @@ class CapesDocentes(object):
         with open(destino_transform + log_file, 'w') as log:
             log.write('Log gerado em {}'.format(self.date.strftime("%Y-%m-%d %H:%M")))
             log.write("\n")
-            log.write('Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1))
+            log.write('Arquivo de entrada possui {} linhas de informacao'.format(self.qtde_linhas_corretas))
             log.write("\n")
             log.write('Arquivo de saida possui {} linhas de informacao'.format(int(self.output_length) - 1))
         print('Processamento CAPES {} finalizado, arquivo de log gerado em {}'.format(self.nome_arquivo,
                                                                                       (destino_transform + log_file)))
-
 
 def capes_docentes_transform():
     """
@@ -158,8 +160,9 @@ def capes_docentes_transform():
     """
 
     PATH_ORIGEM = BASE_PATH_DATA + 'capes/docentes/download'
+
     try:
-        arquivos = os.listdir(PATH_ORIGEM)
+        arquivos = os.listdir(path_origem)
         arquivos.sort()
         arquivo_inicial = arquivos[0]
         nome_arquivo = arquivo_inicial.split('_')[0]

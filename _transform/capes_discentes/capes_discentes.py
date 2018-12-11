@@ -8,6 +8,7 @@ sys.path.insert(0, '../../../buscador_scripts/')
 
 from settings import BASE_PATH_DATA
 from utils.utils import *
+
 import pandas as pd
 import codecs
 import csv
@@ -16,6 +17,9 @@ import datetime
 
 # pd.set_option('display.max_rows', 500)
 # pd.set_option('display.max_columns', 500)
+
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, '../../../buscador_scripts/')
 
 
 class CapesDiscentes(object):
@@ -86,11 +90,11 @@ class CapesDiscentes(object):
         ]
 
     def pega_arquivo_nome(self):
-        '''
+        """
         Pega os arquivos em discentes/download em Discentes, conta as linhas de entrada do arquivo,
         adiciona cada arquivo na lista(df_auxiliar) e no final, faz a concatenação deles e os retorna
 
-        '''
+        """
 
         var = BASE_PATH_DATA + 'capes/discentes/download/'
         df_auxiliar = []
@@ -101,8 +105,8 @@ class CapesDiscentes(object):
                 if file in self.arquivos:
                     print file
                     arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
-                    self.input_lenght += int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
-                    print 'Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1)
+                    self.input_lenght = int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
+                    print('Lendo o arquivo {}.......com o total de {} linhas.'.format(file, self.input_lenght - 1))
                     df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
                     #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=10000, chunksize=1000, encoding='cp1252', low_memory=False)
 
@@ -112,7 +116,7 @@ class CapesDiscentes(object):
 
 
     def pega_arquivo_cadastro_ies_capes(self):
-        '''pega os arquivos de cadastro CAPES IES que serão agregados aos Discentes'''
+        """pega os arquivos de cadastro CAPES IES que serão agregados aos Discentes"""
 
         var = '/var/tmp/solr_front/collections/capes/programas/cadastro/'
         for root, dirs, files in os.walk(var):
@@ -127,7 +131,7 @@ class CapesDiscentes(object):
 
 
     def pega_arquivo_programas_download(self):
-        '''Pega os arquivos do diretorio capes/programas, faz um append deles e os retorna'''
+        """Pega os arquivos do diretorio capes/programas, faz um append deles e os retorna"""
 
         var = BASE_PATH_DATA + 'capes/programas/download/'
         df_auxiliar = []
@@ -258,7 +262,6 @@ class CapesDiscentes(object):
         #import pdb; pdb.set_trace()
         return df
 
-
     def gera_csv(self):
         """
         Pega o Dataframe de retorno do método resolve_dicionario,
@@ -287,12 +290,11 @@ class CapesDiscentes(object):
         with open(destino_transform + log_file, 'w') as log:
             log.write('Log gerado em {}'.format(self.date.strftime("%Y-%m-%d %H:%M")))
             log.write("\n")
-            log.write('Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1))
+            log.write('Arquivo de entrada possui {} linhas de informacao'.format(self.qtde_linhas_corretas))
             log.write("\n")
             log.write('Arquivo de saida possui {} linhas de informacao'.format(int(self.output_length) - 1))
         print('Processamento CAPES {} finalizado, arquivo de log gerado em {}'.format(self.nome_arquivo,
                                                                                       (destino_transform + log_file)))
-
 
 def capes_discentes_transform():
     """
@@ -301,9 +303,9 @@ def capes_discentes_transform():
     passa os parâmetros - arquivos e nome_arquivo para a classe CapesDiscentes.
 
     """
-    PATH_ORIGEM = BASE_PATH_DATA + 'capes/discentes/download'
+
     try:
-        arquivos = os.listdir(PATH_ORIGEM)
+        arquivos = os.listdir(path_origem)
         arquivos.sort()
 
         arquivo_inicial = arquivos[0]

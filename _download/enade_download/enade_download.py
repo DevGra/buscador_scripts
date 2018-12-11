@@ -17,7 +17,6 @@ Antes de 2009, a nomenclatura e formato dos arquivos nao batem.
 """
 
 all_links = {
-
     # '2004': 'http://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2004.zip',
     # '2005': 'http://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2005.zip',
     # '2006': 'http://download.inep.gov.br/microdados/Enade_Microdados/microdados_enade_2006.zip',
