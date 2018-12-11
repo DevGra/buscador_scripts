@@ -13,6 +13,7 @@ import zipfile
 Este script faz o download dos arquivos do ENADE e descompacta-os na pasta dos respectivos anos.
 Deve-se escolher o ano de inicio e o ano final dos arquivos a serem baixados.
 Antes de 2009, a nomenclatura e formato dos arquivos nao batem.
+
 """
 
 all_links = {
