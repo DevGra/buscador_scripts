@@ -12,15 +12,8 @@ import codecs
 import csv
 import commands
 from datetime import datetime
-# Imports para acrescentar ao programas o cadastro das CAPES
-#from dicionarios.cod_gei import cod_gei_dic
-#from dicionarios.cod_mantenedora import cod_mantenedora_dic
-#from dicionarios.cod_oorgani_acad_gei import cod_org_acad_gei_dic
-#from dicionarios.cod_tipo_institu import cod_tipo_institu_dic
-#from dicionarios.nat_juridica_gei import nat_jurudica_gei_dic
 
-
-class CapesProgramas(object):
+class CapesInstituicoes(object):
     """
     A classe CapesProgramas é responsável pela transformaçao da base de dados(Collection - programas),
     faz parte do processo de ETL(Extração, Transformação e Carga).
@@ -48,7 +41,7 @@ class CapesProgramas(object):
         self.nome_arquivo = nome_arquivo
         self.input_lenght = 0
         self.output_length = 0
-        self.ies = self.pega_arquivo_cadastro_ies_capes()
+        self.ies = self.pega_arquivo_instituicoes_capes()
         self.colunas = [
             'AN_BASE',
             'ID_PESSOA',
@@ -103,41 +96,10 @@ class CapesProgramas(object):
 
         ]
 
-    def pega_arquivo_nome(self):
+
+    def pega_arquivo_instituicoes_capes(self):
         """
-        Este método itera os arquivos em: BASE_PATH_DATA + 'capes/programas/download/'
-        e conta suas as linhas.
-
-        PARAMETRO:
-            Não recebe parâmetro.
-
-        RETORNO:
-            Retorna o df_auxiliar, que é um TextFileReader da classe pandas.io.parses.TextFileReader
-
-        """
-
-        var = '/var/tmp/solr_front/collections/capes/programas/download/'
-        df_auxiliar = []
-        for root, dirs, files in os.walk(var):
-            for file in files:
-                if file in self.arquivos:
-                    print file
-                    arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
-                    self.input_lenght += int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
-                    print 'Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1)
-                    df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
-                    #df_auxiliar = pd.read_csv(arquivo, sep=';', low_memory=False, encoding='latin-1')
-                    #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=1000, chunksize=500, encoding='latin-1', low_memory=False)
-                    #df_enade = pd.read_csv(arquivo, sep=';', low_memory=False)
-                    #df_enade = df_enade.loc[:, self.colunas]
-        #import pdb;pdb.set_trace()  #para testar o código
-        df_concat = pd.concat(df_auxiliar)
-
-        return df_concat # retorna um (pandas.io.parsers.TextFileReader)
-
-    def pega_arquivo_cadastro_ies_capes(self):
-        """
-        Este método itera os arquivos de cadastro da CAPES IES em: BASE_PATH_DATA + 'capes/programas/cadastro_instituicoes/'
+        Este método itera os arquivos de cadastro da CAPES IES em: BASE_PATH_DATA + 'capes/programas/cadastro/'
         que será agregado ao programas e elimina as colunas e linhas vazias.
 
         PARAMETRO:
@@ -148,15 +110,15 @@ class CapesProgramas(object):
 
         """
 
-        var = '/var/tmp/solr_front/collections/capes/programas/cadastro_instituicoes/'
+        var = '/var/tmp/solr_front/collections/capes/programas/cadastro/'
         for root, dirs, files in os.walk(var):
             for file in files:
                 arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
-                df_cad_temp = pd.read_csv(arquivo, sep=';', low_memory=False, encoding='latin-1')
+                df_inst_temp = pd.read_csv(arquivo, sep=';', low_memory=False, encoding='latin-1')
         # eliminando as colunas vazias do csv.
-        df_cad = df_cad_temp.dropna(how = 'all', axis = 'columns')
-        df_cad = df_cad.dropna(how = 'all', axis = 'rows')
-        print("Quantidade de linhas do arquivo {} linas".format(df_cad.count()))
+        df_inst = df_inst_temp.dropna(how = 'all', axis = 'columns')
+        df_inst = df_inst.dropna(how = 'all', axis = 'rows')
+        print("Quantidade de linhas do arquivo {} linas".format(df_inst.count()))
 
         # df_duplic = df_cad.duplicated(['NM_ENTIDADE_ENSINO_Capes'])
         # df_true = 0
@@ -165,30 +127,7 @@ class CapesProgramas(object):
 
 
         import pdb; pdb.set_trace()
-        return df_cad
-
-    def merge_programas(self, df):
-        """
-        Este método recebe um dataframe como parâmetro e faz o merge dele com
-        o atributo self.ies, que recebe o método pega_arquivo_cadastro_ies_capes,
-        passando como chave o campo SG_ENTIDE_ENSINO_Capes.
-
-        PARAMETRO:
-            Recebe um dataframe como parâmetro, que o retorno do método pega_arquivo_nome.
-
-        RETORNO:
-            Retorna o dataframe com todas as linhas e colunas agregadas.
-
-        """
-        print 'Fazendo o merge......'
-        #df_merged = df.merge(self.ies, how='left')
-        df_merged = df.merge(self.ies, on=['SG_ENTIDADE_ENSINO_Capes', 'NM_ENTIDADE_ENSINO_Capes'])
-        #df_merged = df.merge(self.ies, how='left')
-        #df_merge = df_merged.loc(colunas_adicionadas)
-        #return df_merged[colunas_adicionadas]
-        #import pdb; pdb.set_trace()
-        return df_merged
-
+        return df_inst
 
     def resolve_dicionarios(self):
         """
@@ -207,11 +146,9 @@ class CapesProgramas(object):
             Retorna um dataframe pronto para ser convertido em csv pelo método gera_csv.
 
         """
-        df = self.pega_arquivo_nome()
+        df = self.ies
         df['SG_ENTIDADE_ENSINO_Capes'] = df['SG_ENTIDADE_ENSINO']
-        df['NM_ENTIDADE_ENSINO_Capes'] = df['NM_ENTIDADE_ENSINO']
         #import pdb; pdb.set_trace()
-        df = self.merge_programas(df)
         df.columns = df.columns.str.replace(' ', '_')
 
         parse_dates = ['DT_SITUACAO_PROGRAMA']
@@ -259,9 +196,9 @@ class CapesProgramas(object):
 
         df_capes = self.resolve_dicionarios()
 
-        destino_transform = '/var/tmp/solr_front/collections/capes/programas/transform'
-        csv_file = '/capes_programas_' + self.nome_arquivo + '.csv'
-        log_file = '/capes_programas_' + self.nome_arquivo + '.log'
+        destino_transform = '/var/tmp/solr_front/collections/capes/instituicoes/transform'
+        csv_file = '/capes_instituicoes_' + self.nome_arquivo + '.csv'
+        log_file = '/capes_institucoes_' + self.nome_arquivo + '.log'
 
         try:
             os.makedirs(destino_transform)
@@ -281,7 +218,7 @@ class CapesProgramas(object):
             log.write('Arquivo de saida possui {} linhas de informacao'.format(int(self.output_length) - 1))
         print('Processamento CAPES PROGRAMAS {} finalizado, arquivo de log gerado em {}'.format(self.nome_arquivo, (destino_transform + log_file)))
 
-def capes_programas_transform():
+def capes_instituicoes_transform():
     """
     Função chamada em transform.py para ajustar os dados da Capes Programas e prepará-los
     para a carga no indexador. Seta o diretório onde os arquivos a serem transformados/ajustados estão,
@@ -295,7 +232,7 @@ def capes_programas_transform():
 
     """
 
-    PATH_ORIGEM = '/var/tmp/solr_front/collections/capes/programas/download'
+    PATH_ORIGEM = '/var/tmp/solr_front/collections/capes/instituicoes/download'
     try:
         arquivos = os.listdir(PATH_ORIGEM)
         arquivos.sort()
@@ -305,7 +242,7 @@ def capes_programas_transform():
         # nome_arquivo = arquivo_inicial +'_a_'+ arquivo_final
         for arquivo in arquivos:
             nome_arquivo = arquivo.split('.')[0]
-            capes_doc = CapesProgramas(arquivo, nome_arquivo)
+            capes_doc = CapesInstituicoes(arquivo, nome_arquivo)
             capes_doc.gera_csv()
         print('Arquivo {} finalizado!'.format(arquivo))
 

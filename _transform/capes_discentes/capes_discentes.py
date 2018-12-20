@@ -49,8 +49,8 @@ class CapesDiscentes(object):
         self.nome_arquivo = nome_arquivo
         self.input_lenght = 0
         self.output_length = 0
-        self.ies = self.pega_arquivo_programas_download()
-        self.cadastro = self.pega_arquivo_cadastro_ies_capes()
+        self.arq_prog = self.pega_arquivo_programas_download()
+        self.cadastro_ies = self.pega_arquivo_cadastro_ies_capes()
         self.colunas = [
             'AN_BASE',
             'NM_GRANDE_AREA_CONHECIMENTO',
@@ -118,7 +118,7 @@ class CapesDiscentes(object):
     def pega_arquivo_cadastro_ies_capes(self):
         """pega os arquivos de cadastro CAPES IES que serão agregados aos Discentes"""
 
-        var = '/var/tmp/solr_front/collections/capes/programas/cadastro/'
+        var = '/var/tmp/solr_front/collections/capes/instituicoes/download'
         for root, dirs, files in os.walk(var):
             for file in files:
                 arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
@@ -190,8 +190,8 @@ class CapesDiscentes(object):
 
         ]
         print 'Fazendo o merge......'
-        df_merged = df.merge(self.ies, on=['AN_BASE', 'CD_PROGRAMA_IES'])
-        #df_merged = df.merge(self.ies, how='left')
+        df_merged = df.merge(self.arq_prog, on=['AN_BASE', 'CD_PROGRAMA_IES'])
+        #df_merged = df.merge(self.arq_prog, how='left')
         #df_merge = df_merged.loc(colunas_adicionadas)
         #return df_merged[colunas_adicionadas]
 
@@ -202,7 +202,7 @@ class CapesDiscentes(object):
         """
         Pega o Dataframe pega_arquivo_nome, o passa como parâmetro para o método
         merge_programas - que faz o merge deles, recebe este dataframe e faz outro merge
-        com o dataframe self.cadastro passando com chave a coluna SG_ENTIDADE_ENSINO_Capes,
+        com o dataframe self.cadastro_IES passando com chave a coluna SG_ENTIDADE_ENSINO_Capes,
         substitui os espaços em branco dos nomes das colunas do dataframe por underline,
         corrige o formato das datas, faz os ajustes dos campos do dataframe,
         resolve os campos para facet, busca e nuvem de palavras e
@@ -214,8 +214,11 @@ class CapesDiscentes(object):
         df = self.merge_programas(df)
 
         df['SG_ENTIDADE_ENSINO_Capes'] = df['SG_ENTIDADE_ENSINO_x']
-        #import pdb; pdb.set_trace()
-        df = df.merge(self.cadastro, on=['SG_ENTIDADE_ENSINO_Capes'])
+        df['NM_ENTIDADE_ENSINO_Capes'] = df['NM_ENTIDADE_ENSINO_x']
+        import pdb; pdb.set_trace()
+        self.cadastro_ies = self.cadastro_ies.drop('AN_BASE', axis=1)
+        import pdb; pdb.set_trace()
+        df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'])
 
         #Substitui os espaçoes em branco dos nomes das colunas do dataframe por undeline
         df.columns = df.columns.str.replace(' ', '_')
@@ -228,6 +231,7 @@ class CapesDiscentes(object):
             # a máscara do formato.
             df[dt] = pd.to_datetime(df[dt], infer_datetime_format=False, format='%d%b%Y:%H:%M:%S', errors='coerce')
 
+        import pdb; pdb.set_trace()
         df['AN_INICIO_CURSO'] = df['AN_INICIO_CURSO'].astype(str)
         #df['ANO_INICIO_PROGRAMA'] = df[df['ANO_INICIO_PROGRAMA'].notnull()]['ANO_INICIO_PROGRAMA'].astype(str)
 
@@ -303,9 +307,9 @@ def capes_discentes_transform():
     passa os parâmetros - arquivos e nome_arquivo para a classe CapesDiscentes.
 
     """
-
+    PATH_ORIGEM = BASE_PATH_DATA + 'capes/discentes/download'
     try:
-        arquivos = os.listdir(path_origem)
+        arquivos = os.listdir(PATH_ORIGEM)
         arquivos.sort()
 
         arquivo_inicial = arquivos[0]
