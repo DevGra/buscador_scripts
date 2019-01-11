@@ -2,18 +2,17 @@
 import errno
 import os
 import sys
-
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, '../../../buscador_scripts/')
-
-from settings import BASE_PATH_DATA
-from utils import *
-
 import pandas as pd
 import codecs
 import csv
 import commands
 from datetime import datetime
+
+from settings import BASE_PATH_DATA
+from utils import *
+
+sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, '../../../buscador_scripts/')
 
 class CapesDocentes(object):
     """
@@ -41,8 +40,7 @@ class CapesDocentes(object):
         self.nome_arquivo = nome_arquivo
         self.input_lenght = 0
         self.output_length = 0
-        # conta as linhas corretas dos arquivos na pasta download. é usado para subtrair as linhas de saída.
-        self.qtde_linhas_corretas = 0
+
         self.colunas = [
             'AN_BASE',
             'NM_GRANDE_AREA_CONHECIMENTO',
@@ -82,7 +80,7 @@ class CapesDocentes(object):
 
         ]
 
-    def pega_arquivo_nome(self):
+    def pega_arquivo_docente(self):
         ''' Pega os arquivos em docentes/download, conta as linhas de entrada do arquivo,
             adiciona cada arquivo na lista(df_auxiliar), faz a concatenação deles e os retorna
 
@@ -106,12 +104,12 @@ class CapesDocentes(object):
 
     def resolve_dicionarios(self):
         """
-        Pega o Dataframe de retorno do método pega_arquivo_nome, resolve os campos para facet
+        Pega o Dataframe de retorno do método pega_arquivo_docente, resolve os campos para facet
         e os retorna para o gera_csv.
 
         """
 
-        df = self.pega_arquivo_nome()
+        df = self.pega_arquivo_docente()
         df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
         df['NM_AREA_CONHECIMENTO_facet'] = df['NM_GRANDE_AREA_CONHECIMENTO'] + '|' + df['NM_AREA_CONHECIMENTO']
         #import pdb; pdb.set_trace()
@@ -145,7 +143,7 @@ class CapesDocentes(object):
         with open(destino_transform + log_file, 'w') as log:
             log.write('Log gerado em {}'.format(self.date.strftime("%Y-%m-%d %H:%M")))
             log.write("\n")
-            log.write('Arquivo de entrada possui {} linhas de informacao'.format(self.qtde_linhas_corretas))
+            log.write('Arquivo de entrada possui {} linhas de informacao'.format(self.input_lenght))
             log.write("\n")
             log.write('Arquivo de saida possui {} linhas de informacao'.format(int(self.output_length) - 1))
         print('Processamento CAPES {} finalizado, arquivo de log gerado em {}'.format(self.nome_arquivo,
