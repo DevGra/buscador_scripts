@@ -106,6 +106,12 @@ class CapesDiscentes(object):
         #----------- RENOMEAR NM_ENTIDADE_ENSINO DA FIOCRUZ PARA FUNDACAO OSWALDO CRUZ (FIOCRUZ)  ----------------
         df_discentes.replace('FUNDACAO OSWALDO CRUZ', 'FUNDACAO OSWALDO CRUZ (FIOCRUZ)', inplace=True)
 
+        # encodando o campo NM_SITUACAO_DISCENTE que esta gerando duplicidade de acento
+        # ignorando o caracter e o substituindo, NÍVEL -> fica: NVEL
+        df_discentes['NM_SITUACAO_DISCENTE'] = df_discentes['NM_SITUACAO_DISCENTE'].apply(lambda x: x.encode('ascii', 'ignore').strip())
+        # substituindo com o novo valores
+        df_discentes['NM_SITUACAO_DISCENTE'].replace(['MUDANCA DE NVEL SEM DEFESA','MUDANA DE NVEL SEM DEFESA'], 'MUDANCA DE NIVEL SEM DEFESA', inplace=True)
+
         # -------- ADICIONANDO OS CAMPOS AO DF_DISCENTES PARA FAZER O MERGE COM PROGRAMAS E COM CADASTRO DE IES -------------
         df_discentes['SG_ENTIDADE_ENSINO_Capes'] = df_discentes['SG_ENTIDADE_ENSINO']
         df_discentes['NM_ENTIDADE_ENSINO_Capes'] = df_discentes['NM_ENTIDADE_ENSINO']
@@ -220,7 +226,7 @@ class CapesDiscentes(object):
         # df == df_merg_dis_prog neste ponto
 
         df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'])
-        import pdb; pdb.set_trace()
+
 
         """
         COLUNAS GERADAS NA SAIDA - FAZER TRATAMENTO
@@ -259,55 +265,100 @@ class CapesDiscentes(object):
 
         """
 
-        # Lista com as datas que devem ser formatada
-        parse_dates = ['DT_MATRICULA_DISCENTE', 'DT_SITUACAO_DISCENTE' ]
+        # Lista com as datas que devem ser formatadas
+        parse_dates = ['DT_MATRICULA_DISCENTE', 'DT_SITUACAO_DISCENTE', 'DT_SITUACAO_PROGRAMA']
 
         for dt in parse_dates:
             # Percorre a lista de datas e seta o formato da data que o datetime usará para a conversão, ou seja,
             # a máscara do formato.
             df[dt] = pd.to_datetime(df[dt], infer_datetime_format=False, format='%d%b%Y:%H:%M:%S', errors='coerce')
 
-        df['SituacaoDiscente'] = df['NM_SITUACAO_DISCENTE'].astype(str)
-        df['IngressanteAno'] = df['ST_INGRESSANTE'].astype(str)
+        # para ordenar a data para o facet
+        linha_MATRICULA_DISCENTE = []
+        df['DT_MATRICULA_DISCENTE'] = df[dt].dt.strftime('%Y%m%d')
+        for row in df['DT_MATRICULA_DISCENTE'].sort_values(ascending=False).astype(str):
+            linha_MATRICULA_DISCENTE.append(row)
+        # criando um dataframe com a coluna DT_MATRICULA_DISCENTE ordenada
+        dt_order = pd.DataFrame({'DT_MATRICULA_DISCENTE_order':linha_MATRICULA_DISCENTE})
+        # fazendo o join com o dataframe principal(df)
+        dt_order['DT_MATRICULA_DISCENTE_order'] = dt_order['DT_MATRICULA_DISCENTE_order'].apply(data_facet)
+        df = df.join(dt_order)
+
+        # ordenar para a outra data
+        linha_SITUACAO_DISCENTE = []
+        df['DT_SITUACAO_DISCENTE'] = df[dt].dt.strftime('%Y%m%d')
+        for row in df['DT_SITUACAO_DISCENTE'].sort_values(ascending=False).astype(str):
+            linha_SITUACAO_DISCENTE.append(row)
+        # criando um dataframe com a coluna DT_SITUACAO_DISCENTE ordenada
+        dt_order_situacao = pd.DataFrame({'DT_SITUACAO_DISCENTE_order':linha_SITUACAO_DISCENTE})
+        # fazendo o join com o dataframe principal(df)
+        dt_order_situacao['DT_SITUACAO_DISCENTE_order'] = dt_order_situacao['DT_SITUACAO_DISCENTE_order'].apply(data_facet)
+        df = df.join(dt_order_situacao)
+
+        df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
+
+        #import pdb; pdb.set_trace()
+        # o campo situacaoDiscente está com o nome duplicado, um escrito com Ç outro com C.
+        # unificando o campos
+        df['SituacaoDiscente'] = df['NM_SITUACAO_DISCENTE']
+        #df['SituacaoDiscente'].replace('MUDANCA DE NIVEL SEM DEFESA', 'MUDANÇA DE NIVEL SEM DEFESA', inplace=True)
+        df['IngressanteAno'] = df['ST_INGRESSANTE']
         df['GrauAcademico'] = df['DS_GRAU_ACADEMICO_DISCENTE'].astype(str)
-        df['Genero'] = df['TP_SEXO_DISCENTE'].astype(str)
-        df['Idade'] = df['DS_FAIXA_ETARIA'].sort_values()
+        df['Genero'] = df['TP_SEXO_DISCENTE']
+        df['ID_PESSOA'] = df['ID_PESSOA'].astype(str)
 
+        # Pra colocar a idade em ordem crescente
+        linha_idade = []
+        for row in df['DS_FAIXA_ETARIA'].sort_values():
+            linha_idade.append(row)
+        dt_idade = pd.DataFrame({'idade_order':linha_idade})
+        df = df.join(dt_idade)
 
+        #df.sort_values(by='Idade', ascending=True)
 
-        df['AN_INICIO_CURSO'] = df['AN_INICIO_CURSO'].astype(str)
-        #df['ANO_INICIO_PROGRAMA'] = df[df['ANO_INICIO_PROGRAMA'].notnull()]['ANO_INICIO_PROGRAMA'].astype(str)
-        #df['ANO_MATRICULA_facet'] = df[df['DT_MATRICULA'].notnull()]['DT_MATRICULA'].dt.year.apply(gYear)
-        #df['DT_SITUACAO_PROGRAMA'] = df[df['DT_SITUACAO_PROGRAMA'].dt.year == '2013']['DT_SITUACAO_PROGRAMA'].dt.year.apply(gYear)
+        df['NM_PAIS_NACIONALIDADE_DISCENTE'].sort_values()
 
-        # Criação dos campos facets
         df['AN_BASE_facet'] = df['AN_BASE'].apply(gYear)
         df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
         df['AREA_CONHECIMENTO_facet'] = df['NM_GRANDE_AREA_CONHECIMENTO'] + '|' + df['NM_AREA_CONHECIMENTO']
-        #df['DT_SITUACAO_PROGRAMA_facet'] = df['DT_SITUACAO_PROGRAMA'].dt.year.apply(gYear)
-        df['ANO_INICIO_PROGRAMA_facet'] = df['ANO_INICIO_PROGRAMA'].apply(gYear)
-        #df['AN_INICIO_CURSO_facet'] = df['AN_INICIO_CURSO'].apply(gYear)
 
-        df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
-        df['DT_SITUACAO_PROGRAMA'] = df['DT_SITUACAO_PROGRAMA'].astype(str)
-        df['DT_SITUACAO_PROGRAMA_facet'] = df['DT_SITUACAO_PROGRAMA'].apply(data_facet)
-        df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
+        # Campos setados do cadastro CAPES IES
+        df['cat_insti'] = df['Tipo_de_Instituicao']
+        df['CS_Natureza_Juridica'] = df['Nome_Natureza_Juridica-GEI']
+        df['DS_ORGANIZACAO_ACADEMICA_Fapesp'] = df['DS_ORGANIZACAO_ACADEMICA-GEI']
 
+        #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
+        # CAMPOS PARA BUSCA AVANÇADA
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
         df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
         df[u'NM_TESE_DISSERTACAO_exact'] = df[u'NM_TESE_DISSERTACAO'].apply(norm_keyword)
+        df['ID_PESSOA_exact'] = df['ID_PESSOA']
+        df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES']
+        df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR'].apply(norm_keyword)
+        # Criando o campo Casos_excluidos_GeoCapes. Apenas com os valores sim e não,
+        # é um campo estático, apenas para criar a variável.
+        data = {'excluidos': {0: 'Não', 1: 'sim'}}
+        df_casos = pd.DataFrame(data)
+        # passa o valor do df_excluido para o campo criado no df principal
+        df['Casos_Excluidos_GeoCapes'] = df_casos['excluidos']
+        df['Casos_Excluidos_GeoCapes'] = df['Casos_Excluidos_GeoCapes'].dropna()
 
-        # Campos setados do cadastro CAPES IES
-        df['NM_INST_FapespGei'] = df['NM_INST_GEI'].astype(str)
-        df['Codigo_GEI'] = df['Codigo_GEI'].astype(str)
-        df['cat_insti'] = df['Codigo_do_Tipo_de_Instituicao'].astype(int)
-        df['CS_Natureza_Juridica'] = df['Nome_Natureza_Juridica-GEI'].astype(str)
-        df['DS_ORGANIZACAO_ACADEMICA_Fapesp'] = df['DS_ORGANIZACAO_ACADEMICA-GEI'].astype(str)
-        # df['Codigo_Natureza_Juridica_-_GEI'] = df['Codigo_Natureza_Juridica_-_GEI'].astype(int)
-        # df['CD_ORGANIZACAO_ACADEMICA_-_GEI'] = df['CD_ORGANIZACAO_ACADEMICA_-_GEI'].astype(int)
-        # df['Codigo_Mantenedora'] = df['Codigo_Mantenedora'].astype(int)
 
+        #df['AN_INICIO_CURSO'] = df['AN_INICIO_CURSO'].astype(str)
+        #df['ANO_INICIO_PROGRAMA'] = df[df['ANO_INICIO_PROGRAMA'].notnull()]['ANO_INICIO_PROGRAMA'].astype(str)
+        #df['ANO_MATRICULA_facet'] = df[df['DT_MATRICULA'].notnull()]['DT_MATRICULA'].dt.year.apply(gYear)
+        #df['DT_SITUACAO_PROGRAMA'] = df[df['DT_SITUACAO_PROGRAMA'].dt.year == '2013']['DT_SITUACAO_PROGRAMA'].dt.year.apply(gYear)
         #import pdb; pdb.set_trace()
+        # Criação dos campos facets
+
+        #df['DT_SITUACAO_PROGRAMA_facet'] = df['DT_SITUACAO_PROGRAMA'].dt.year.apply(gYear)
+        #df['ANO_INICIO_PROGRAMA_facet'] = df['ANO_INICIO_PROGRAMA'].apply(gYear)
+        #df['AN_INICIO_CURSO_facet'] = df['AN_INICIO_CURSO'].apply(gYear)
+        #import pdb; pdb.set_trace()
+
+        print 'df pronto para gerar'
+        import pdb; pdb.set_trace()
+
         return df
 
     def gera_csv(self):

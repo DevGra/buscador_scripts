@@ -131,9 +131,14 @@ class CapesProgramas(object):
                     #df_enade = pd.read_csv(arquivo, sep=';', low_memory=False)
                     #df_enade = df_enade.loc[:, self.colunas]
         #import pdb;pdb.set_trace()  #para testar o código
-        df_concat = pd.concat(df_auxiliar)
+        df_programas = pd.concat(df_auxiliar)
+        #----------- RENOMEAR NM_ENTIDADE_ENSINO DA FIOCRUZ PARA FUNDACAO OSWALDO CRUZ (FIOCRUZ)  ----------------
+        df_programas.replace('FUNDACAO OSWALDO CRUZ', 'FUNDACAO OSWALDO CRUZ (FIOCRUZ)', inplace=True)
+        # -------- ADICIONANDO OS CAMPOS AO DF_DISCENTES PARA FAZER O MERGE COM PROGRAMAS E COM CADASTRO DE IES -------------
+        df_programas['SG_ENTIDADE_ENSINO_Capes'] = df_programas['SG_ENTIDADE_ENSINO']
+        df_programas['NM_ENTIDADE_ENSINO_Capes'] = df_programas['NM_ENTIDADE_ENSINO']
 
-        return df_concat # retorna um (pandas.io.parsers.TextFileReader)
+        return df_programas # retorna um (pandas.io.parsers.TextFileReader)
 
     def pega_arquivo_cadastro_ies_capes(self):
         """
@@ -154,18 +159,17 @@ class CapesProgramas(object):
                 arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
                 df_cad_temp = pd.read_csv(arquivo, sep=';', low_memory=False, encoding='latin-1')
         # eliminando as colunas vazias do csv.
-        df_cad = df_cad_temp.dropna(how = 'all', axis = 'columns')
-        df_cad = df_cad.dropna(how = 'all', axis = 'rows')
-        print("Quantidade de linhas do arquivo {} linas".format(df_cad.count()))
+        df_cadastro_ies = df_cad_temp.dropna(how = 'all', axis = 'columns')
+        df_cadastro_ies = df_cadastro_ies.dropna(how = 'all', axis = 'rows')
+        # ----- DELETANDO O AN_BASE E DS_DEPENDENCIA_ADMINISTRATIVA PARA NÃO GERAR DUAS COLUNAS IGUAIS APÓS O MERGE ------
+        df_cadastro_ies = df_cadastro_ies.drop(['AN_BASE', 'DS_DEPENDENCIA_ADMINISTRATIVA', 'CS_STATUS_JURIDICO'], axis=1)
 
         # df_duplic = df_cad.duplicated(['NM_ENTIDADE_ENSINO_Capes'])
         # df_true = 0
         # if df_duplic == True:
         #     df_true = df_duplic
-
-
-        import pdb; pdb.set_trace()
-        return df_cad
+        #import pdb; pdb.set_trace()
+        return df_cadastro_ies
 
     def merge_programas(self, df):
         """
@@ -225,6 +229,7 @@ class CapesProgramas(object):
         df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
         df['AREA_CONHECIMENTO_facet'] = df['NM_GRANDE_AREA_CONHECIMENTO'] + '|' + df['NM_AREA_CONHECIMENTO'] + '|' + df['NM_SUBAREA_CONHECIMENTO']
         df['ANO_INICIO_PROGRAMA_facet'] = df['ANO_INICIO_PROGRAMA'].apply(gYear)
+        df['AN_INICIO_CURSO_facet'] = df['AN_INICIO_CURSO'].apply(gYear)
 
         df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
         df['DT_SITUACAO_PROGRAMA'] = df['DT_SITUACAO_PROGRAMA'].astype(str)
@@ -234,13 +239,12 @@ class CapesProgramas(object):
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
         df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
 
-        df['Codigo_GEI'] = df['Codigo_GEI'].astype(str)
-        df['Codigo_do_Tipo_de_Instituicao_'] = df['Codigo_do_Tipo_de_Instituicao_'].astype(int)
-        df['Codigo_Natureza_Juridica_-_GEI'] = df['Codigo_Natureza_Juridica_-_GEI'].astype(int)
-        df['CD_ORGANIZACAO_ACADEMICA_-_GEI'] = df['CD_ORGANIZACAO_ACADEMICA_-_GEI'].astype(int)
-        df['Codigo_Mantenedora'] = df['Codigo_Mantenedora'].astype(int)
+        # Campos setados do cadastro CAPES IES
+        df['cat_insti'] = df['Tipo_de_Instituicao']
+        df['CS_Natureza_Juridica'] = df['Nome_Natureza_Juridica-GEI']
+        df['DS_ORGANIZACAO_ACADEMICA_Fapesp'] = df['DS_ORGANIZACAO_ACADEMICA-GEI']
 
-        #import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         return df
 
     def gera_csv(self):

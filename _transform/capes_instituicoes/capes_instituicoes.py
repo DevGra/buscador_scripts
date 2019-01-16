@@ -15,7 +15,7 @@ from datetime import datetime
 
 class CapesInstituicoes(object):
     """
-    A classe CapesProgramas é responsável pela transformaçao da base de dados(Collection - programas),
+    A classe CapesInstituicoes é responsável pela transformaçao da base de dados(Collection - instituições),
     faz parte do processo de ETL(Extração, Transformação e Carga).
 
     Atributos:
@@ -70,29 +70,7 @@ class CapesInstituicoes(object):
             'DS_DEPENDENCIA_ADMINISTRATIVA',
             'CS_Natureza_Juridica',
             'DS_ORGANIZACAO_ACADEMICA_Fapesp',
-            'NM_REGIAO',
-            'SG_UF_PROGRAMA',
-            'NM_MUNICIPIO_PROGRAMA_IES',
-            'CD_PROGRAMA_IES',
-            'NM_PROGRAMA_IES',
-            'NM_GRANDE_AREA_CONHECIMENTO',
-            'NM_AREA_CONHECIMENTO',
-            'NM_AREA_BASICA',
-            'NM_SUBAREA_CONHECIMENTO',
-            'NM_ESPECIALIDADE',
-            'CD_AREA_AVALIACAO',
-            'NM_AREA_AVALIACAO',
-            'CD_CONCEITO_PROGRAMA',
-            'CD_CONCEITO_CURSO',
-            'NM_MODALIDADE_PROGRAMA',
-            'NM_GRAU_PROGRAMA',
-            'IN_REDE',
-            'DS_SITUACAO_PROGRAMA',
-            'DT_SITUACAO_PROGRAMA',
-            'NM_TESE_DISSERTACAO',
-            'NM_ORIENTADOR',
-            'ID_ADD_FOTO_PROGRAMA',
-            'ID_ADD_FOTO_PROGRAMA_IES'
+
 
         ]
 
@@ -110,7 +88,7 @@ class CapesInstituicoes(object):
 
         """
 
-        var = '/var/tmp/solr_front/collections/capes/programas/cadastro/'
+        var = '/var/tmp/solr_front/collections/capes/programas/intituicoes/download'
         for root, dirs, files in os.walk(var):
             for file in files:
                 arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
@@ -124,9 +102,7 @@ class CapesInstituicoes(object):
         # df_true = 0
         # if df_duplic == True:
         #     df_true = df_duplic
-
-
-        import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         return df_inst
 
     def resolve_dicionarios(self):
@@ -146,11 +122,6 @@ class CapesInstituicoes(object):
             Retorna um dataframe pronto para ser convertido em csv pelo método gera_csv.
 
         """
-        df = self.ies
-        df['SG_ENTIDADE_ENSINO_Capes'] = df['SG_ENTIDADE_ENSINO']
-        #import pdb; pdb.set_trace()
-        df.columns = df.columns.str.replace(' ', '_')
-
         parse_dates = ['DT_SITUACAO_PROGRAMA']
 
         for dt in parse_dates:
@@ -166,15 +137,10 @@ class CapesInstituicoes(object):
         df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
         df['DT_SITUACAO_PROGRAMA'] = df['DT_SITUACAO_PROGRAMA'].astype(str)
         df['DT_SITUACAO_PROGRAMA_facet'] = df['DT_SITUACAO_PROGRAMA'].apply(data_facet)
-        df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
 
-        df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
-        df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
-
-        df['Codigo_GEI'] = df['Codigo_GEI'].astype(str)
-        df['Codigo_do_Tipo_de_Instituicao_'] = df['Codigo_do_Tipo_de_Instituicao_'].astype(int)
-        df['Codigo_Natureza_Juridica_-_GEI'] = df['Codigo_Natureza_Juridica_-_GEI'].astype(int)
-        df['CD_ORGANIZACAO_ACADEMICA_-_GEI'] = df['CD_ORGANIZACAO_ACADEMICA_-_GEI'].astype(int)
+        df['SituacaoDiscente'] = df['NM_SITUACAO_DISCENTE']
+        df['IngressanteAno'] = df['ST_INGRESSANTE']
+        df['GrauAcademico'] = df['DS_GRAU_ACADEMICO_DISCENTE'].astype(str)
         df['Codigo_Mantenedora'] = df['Codigo_Mantenedora'].astype(int)
 
         #import pdb; pdb.set_trace()

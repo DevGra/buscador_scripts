@@ -40,6 +40,8 @@ class CapesDocentes(object):
         self.nome_arquivo = nome_arquivo
         self.input_lenght = 0
         self.output_length = 0
+        self.arq_prog = self.pega_arquivo_programas_download()
+        self.cadastro_ies = self.pega_arquivo_cadastro_ies_capes()
 
         self.colunas = [
             'AN_BASE',
@@ -80,7 +82,7 @@ class CapesDocentes(object):
 
         ]
 
-    def pega_arquivo_docente(self):
+    def pega_arquivos_docentes(self):
         ''' Pega os arquivos em docentes/download, conta as linhas de entrada do arquivo,
             adiciona cada arquivo na lista(df_auxiliar), faz a concatenação deles e os retorna
 
@@ -99,20 +101,137 @@ class CapesDocentes(object):
                     #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=3000, chunksize=3000, encoding='latin-1', low_memory=False)
         #import pdb;pdb.set_trace()  #para testar o código
 
-        df_concat = pd.concat(df_auxiliar)
-        return df_concat
+        df_docentes = pd.concat(df_auxiliar)
+        # renomeia para corrigir o erro de merge com programas e instituições
+        df_docentes.replace('FUNDACAO OSWALDO CRUZ', 'FUNDACAO OSWALDO CRUZ (FIOCRUZ)', inplace=True)
+        # cria a coluna no dataframe docentes para o merge com programas e instituições
+        df_docentes['SG_ENTIDADE_ENSINO_Capes'] = df_docentes['SG_ENTIDADE_ENSINO']
+        df_docentes['NM_ENTIDADE_ENSINO_Capes'] = df_docentes['NM_ENTIDADE_ENSINO']
+
+        return df_docentes
+
+    def pega_arquivo_programas_download(self):
+        """Pega os arquivos do diretorio capes/programas, faz um append deles e os retorna"""
+
+        var = BASE_PATH_DATA + 'capes/programas/download/'
+        df_auxiliar = []
+        print 'Lendo os arquivos do CAPES programas....'
+        for root, dirs, files in os.walk(var):
+
+            for file in files:
+                print file
+                arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
+                self.input_lenght += int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
+                print 'Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1)
+                df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
+                #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=10000, chunksize=1000, encoding='cp1252', low_memory=False)
+
+        df_programas = pd.concat(df_auxiliar, sort=False)
+        # drop de algumas colunas de programas que geram duplicidade com discentes
+        df_programas = df_programas.drop(['NM_GRANDE_AREA_CONHECIMENTO','CD_AREA_AVALIACAO',
+        'NM_AREA_AVALIACAO', 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', 'CS_STATUS_JURIDICO',
+        'DS_DEPENDENCIA_ADMINISTRATIVA','NM_REGIAO', 'NM_MUNICIPIO_PROGRAMA_IES', 'NM_MODALIDADE_PROGRAMA',
+        'NM_PROGRAMA_IES', 'SG_UF_PROGRAMA', 'NM_GRAU_PROGRAMA', 'CD_CONCEITO_PROGRAMA',
+        'ID_ADD_FOTO_PROGRAMA_IES', 'ID_ADD_FOTO_PROGRAMA'], axis=1)
+
+
+        return df_programas
+
+    def pega_arquivo_cadastro_ies_capes(self):
+        """pega os arquivos de cadastro CAPES IES que serão agregados aos Discentes"""
+
+        var = '/var/tmp/solr_front/collections/capes/instituicoes/download'
+        for root, dirs, files in os.walk(var):
+            for file in files:
+                arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
+                df_cad_temp = pd.read_csv(arquivo, sep=';', low_memory=False, encoding='latin-1')
+        # eliminando as colunas vazias do csv.
+        df_cad_ies = df_cad_temp.dropna(how = 'all', axis = 'columns')
+        df_cad_ies = df_cad_ies.dropna(how = 'all', axis = 'rows')
+        # ----- DELETANDO O AN_BASE E DS_DEPENDENCIA_ADMINISTRATIVA PARA NÃO GERAR DUAS COLUNAS IGUAIS APÓS O MERGE ------
+        df_cad_ies = df_cad_ies.drop(['AN_BASE', 'DS_DEPENDENCIA_ADMINISTRATIVA', 'CS_STATUS_JURIDICO'], axis=1)
+
+        return df_cad_ies
+
+    def merge_dataframes(self, df):
+        ''' Colunas que serão agregadas aos Docentes, segundo o modelo. Esta função
+            recebe um dataframe de parametro e faz o merge dele com os arquivos
+            do CAPES Programas.'''
+
+        print 'Fazendo o merge......'
+        df_merg_doc_prog = df.merge(self.arq_prog, on=['AN_BASE', 'CD_PROGRAMA_IES'],suffixes=('_docentes', '_programas'))
+
+        return df_merg_doc_prog
 
     def resolve_dicionarios(self):
         """
-        Pega o Dataframe de retorno do método pega_arquivo_docente, resolve os campos para facet
+        Pega o Dataframe de retorno do método pega_arquivos_docentes, resolve os campos para facet
         e os retorna para o gera_csv.
 
         """
+        df = self.pega_arquivos_docentes()
+        df = self.merge_dataframes(df)
+        # df == df_merg_doc_prog neste ponto
 
-        df = self.pega_arquivo_docente()
-        df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
-        df['NM_AREA_CONHECIMENTO_facet'] = df['NM_GRANDE_AREA_CONHECIMENTO'] + '|' + df['NM_AREA_CONHECIMENTO']
+        df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'])
+        # Lista com as datas que devem ser formatadas
+        parse_dates = ['DT_SITUACAO_PROGRAMA']
+
+        for dt in parse_dates:
+            # Percorre a lista de datas e seta o formato da data que o datetime usará para a conversão, ou seja,
+            # a máscara do formato.
+            df[dt] = pd.to_datetime(df[dt], infer_datetime_format=False, format='%d%b%Y:%H:%M:%S', errors='coerce')
+
+        # para ordenar a data para o facet
+        linha_SITUACAO_PROGRAMA = []
+        df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
+        for row in df['DT_SITUACAO_PROGRAMA'].sort_values(ascending=False).astype(str):
+            linha_SITUACAO_PROGRAMA.append(row)
+        # criando um dataframe com a coluna DT_MATRICULA_DISCENTE ordenada
+        dt_order = pd.DataFrame({'DT_SITUACAO_PROGRAMA_order':linha_SITUACAO_PROGRAMA})
+        # fazendo o join com o dataframe principal(df)
+        df = df.join(dt_order)
+        df['DT_SITUACAO_PROGRAMA_order'] = df['DT_SITUACAO_PROGRAMA_order'].apply(data_facet)
+
+
         #import pdb; pdb.set_trace()
+        # o campo situacaoDiscente está com o nome duplicado, um escrito com Ç outro com C.
+        # unificando o campos
+        df['SituacaoDiscente'] = df['NM_SITUACAO_DISCENTE']
+        #df['SituacaoDiscente'].replace('MUDANCA DE NIVEL SEM DEFESA', 'MUDANÇA DE NIVEL SEM DEFESA', inplace=True)
+        df['IngressanteAno'] = df['ST_INGRESSANTE']
+        df['GrauAcademico'] = df['DS_GRAU_ACADEMICO_DISCENTE'].astype(str)
+
+
+        # Pra colocar a idade em ordem crescente
+        linha_idade = []
+        for row in df['DS_FAIXA_ETARIA'].sort_values():
+            linha_idade.append(row)
+        dt_idade = pd.DataFrame({'DS_FAIXA_ETARIA_order':linha_idade})
+        df = df.join(dt_idade)
+
+        #df.sort_values(by='Idade', ascending=True)
+
+        df['AN_BASE_facet'] = df['AN_BASE'].apply(gYear)
+        df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
+        df['AREA_CONHECIMENTO_facet'] = df['NM_GRANDE_AREA_CONHECIMENTO'] + '|' + df['NM_AREA_CONHECIMENTO']
+
+        # Campos setados do cadastro CAPES IES
+        df['cat_insti'] = df['Tipo_de_Instituicao']
+        df['CS_Natureza_Juridica'] = df['Nome_Natureza_Juridica-GEI']
+        df['DS_ORGANIZACAO_ACADEMICA_Fapesp'] = df['DS_ORGANIZACAO_ACADEMICA-GEI']
+
+        #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
+        # CAMPOS PARA BUSCA AVANÇADA
+        # df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
+        # df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
+        # df[u'NM_TESE_DISSERTACAO_exact'] = df[u'NM_TESE_DISSERTACAO'].apply(norm_keyword)
+        # df['ID_PESSOA_exact'] = df['ID_PESSOA']
+        # df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES']
+        # df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR'].apply(norm_keyword)
+
+        print 'df pronto para gerar'
+        import pdb; pdb.set_trace()
 
         return df
 
