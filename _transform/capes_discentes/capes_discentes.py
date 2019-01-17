@@ -107,7 +107,7 @@ class CapesDiscentes(object):
         df_discentes.replace('FUNDACAO OSWALDO CRUZ', 'FUNDACAO OSWALDO CRUZ (FIOCRUZ)', inplace=True)
 
         # encodando o campo NM_SITUACAO_DISCENTE que esta gerando duplicidade de acento
-        # ignorando o caracter e o substituindo, NÍVEL -> fica: NVEL
+        # ignorando o caracter e o substituindo, por exemplo, a palavra NÍVEL -> fica: NVEL
         df_discentes['NM_SITUACAO_DISCENTE'] = df_discentes['NM_SITUACAO_DISCENTE'].apply(lambda x: x.encode('ascii', 'ignore').strip())
         # substituindo com o novo valores
         df_discentes['NM_SITUACAO_DISCENTE'].replace(['MUDANCA DE NVEL SEM DEFESA','MUDANA DE NVEL SEM DEFESA'], 'MUDANCA DE NIVEL SEM DEFESA', inplace=True)
@@ -115,6 +115,9 @@ class CapesDiscentes(object):
         # -------- ADICIONANDO OS CAMPOS AO DF_DISCENTES PARA FAZER O MERGE COM PROGRAMAS E COM CADASTRO DE IES -------------
         df_discentes['SG_ENTIDADE_ENSINO_Capes'] = df_discentes['SG_ENTIDADE_ENSINO']
         df_discentes['NM_ENTIDADE_ENSINO_Capes'] = df_discentes['NM_ENTIDADE_ENSINO']
+
+        # remover a coluna que irão gerar conflito com instituições,
+        df_discentes = df_discentes.drop(['DS_DEPENDENCIA_ADMINISTRATIVA','CS_STATUS_JURIDICO'], axis=1)
 
         return df_discentes # retornando todos os anos 2013_2015 a 2016_2017
 
@@ -157,7 +160,7 @@ class CapesDiscentes(object):
         df_cad_ies = df_cad_temp.dropna(how = 'all', axis = 'columns')
         df_cad_ies = df_cad_ies.dropna(how = 'all', axis = 'rows')
         # ----- DELETANDO O AN_BASE E DS_DEPENDENCIA_ADMINISTRATIVA PARA NÃO GERAR DUAS COLUNAS IGUAIS APÓS O MERGE ------
-        df_cad_ies = df_cad_ies.drop(['AN_BASE', 'DS_DEPENDENCIA_ADMINISTRATIVA', 'CS_STATUS_JURIDICO'], axis=1)
+        df_cad_ies = df_cad_ies.drop(['AN_BASE'], axis=1)
 
         return df_cad_ies
 
@@ -225,45 +228,7 @@ class CapesDiscentes(object):
         df = self.merge_dataframes(df)
         # df == df_merg_dis_prog neste ponto
 
-        df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'])
-
-
-        """
-        COLUNAS GERADAS NA SAIDA - FAZER TRATAMENTO
-
-        u'AN_BASE',                              u'NM_GRANDE_AREA_CONHECIMENTO',
-        u'CD_AREA_AVALIACAO',                    u'NM_AREA_AVALIACAO',
-        u'SG_ENTIDADE_ENSINO',                   u'NM_ENTIDADE_ENSINO',
-        u'CS_STATUS_JURIDICO',                   u'DS_DEPENDENCIA_ADMINISTRATIVA',
-        u'NM_MODALIDADE_PROGRAMA',               u'NM_GRAU_PROGRAMA',
-        u'CD_PROGRAMA_IES',                      u'NM_PROGRAMA_IES',
-        u'NM_REGIAO',                            u'SG_UF_PROGRAMA',
-        u'NM_MUNICIPIO_PROGRAMA_IES',             u'CD_CONCEITO_PROGRAMA',
-        u'CD_CONCEITO_CURSO',                      u'ID_PESSOA',
-        u'NR_DOCUMENTO_DISCENTE',                u'TP_DOCUMENTO_DISCENTE',
-        u'NM_DISCENTE',                          u'NM_PAIS_NACIONALIDADE_DISCENTE',
-        u'DS_TIPO_NACIONALIDADE_DISCENTE',        u'TP_SEXO_DISCENTE',
-        u'DS_FAIXA_ETARIA',                        u'DS_GRAU_ACADEMICO_DISCENTE',
-        u'ST_INGRESSANTE',                          u'NM_SITUACAO_DISCENTE',
-        u'DT_MATRICULA_DISCENTE',                    u'DT_SITUACAO_DISCENTE',
-        u'QT_MES_TITULACAO',                        u'NM_TESE_DISSERTACAO',
-        u'NM_ORIENTADOR',                           u'ID_ADD_FOTO_PROGRAMA',
-        u'ID_ADD_FOTO_PROGRAMA_IES',                 u'SG_ENTIDADE_ENSINO_Capes',
-        u'NM_ENTIDADE_ENSINO_Capes',                u'NM_AREA_CONHECIMENTO',
-        u'NM_SUBAREA_CONHECIMENTO',                 u'NM_ESPECIALIDADE',
-        u'DS_ORGANIZACAO_ACADEMICA',                u'NM_PROGRAMA_IDIOMA',
-        u'ANO_INICIO_PROGRAMA',                     u'AN_INICIO_CURSO',
-        u'IN_REDE',                                 u'SG_ENTIDADE_ENSINO_REDE',
-        u'DS_SITUACAO_PROGRAMA',                    u'DT_SITUACAO_PROGRAMA',
-        u'DS_CLIENTELA_QUADRIENAL_2017',            u'NM_AREA_BASICA',
-        u'CD_INST_GEI',                             u'SG_INST_GEI',
-        u'NM_INST_GEI',                             u'Codigo_do_Tipo_de_Instituicao',
-        u'Tipo_de_Instituicao',                     u'Codigo_Natureza_Juridica-GEI',
-        u'Nome_Natureza_Juridica-GEI',              u'CD_ORGANIZACAO_ACADEMICA-GEI',
-        u'DS_ORGANIZACAO_ACADEMICA-GEI',            u'DS_ORGANIZACAO_ACADEMICA_Capes',
-        u'CD_Mantenedora',                           u'NM_Mantenedora'],
-
-        """
+        df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'],suffixes=('_discentes', '_institu'))
 
         # Lista com as datas que devem ser formatadas
         parse_dates = ['DT_MATRICULA_DISCENTE', 'DT_SITUACAO_DISCENTE', 'DT_SITUACAO_PROGRAMA']
@@ -281,7 +246,7 @@ class CapesDiscentes(object):
         # criando um dataframe com a coluna DT_MATRICULA_DISCENTE ordenada
         dt_order = pd.DataFrame({'DT_MATRICULA_DISCENTE_order':linha_MATRICULA_DISCENTE})
         # fazendo o join com o dataframe principal(df)
-        dt_order['DT_MATRICULA_DISCENTE_order'] = dt_order['DT_MATRICULA_DISCENTE_order'].apply(data_facet)
+        dt_order['DT_MATRICULA_DISCENTE_order'].apply(data_facet).astype(str)
         df = df.join(dt_order)
 
         # ordenar para a outra data
@@ -292,11 +257,13 @@ class CapesDiscentes(object):
         # criando um dataframe com a coluna DT_SITUACAO_DISCENTE ordenada
         dt_order_situacao = pd.DataFrame({'DT_SITUACAO_DISCENTE_order':linha_SITUACAO_DISCENTE})
         # fazendo o join com o dataframe principal(df)
-        dt_order_situacao['DT_SITUACAO_DISCENTE_order'] = dt_order_situacao['DT_SITUACAO_DISCENTE_order'].apply(data_facet)
+        dt_order_situacao['DT_SITUACAO_DISCENTE_order'].apply(data_facet).astype(str)
         df = df.join(dt_order_situacao)
 
         df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
-
+        df['DT_SITUACAO_PROGRAMA'] = df['DT_SITUACAO_PROGRAMA'].apply(data_facet)
+        df['DT_MATRICULA_DISCENTE'] = df['DT_MATRICULA_DISCENTE'].apply(data_facet)
+        df['DT_SITUACAO_DISCENTE'] = df['DT_SITUACAO_DISCENTE'].apply(data_facet)
         #import pdb; pdb.set_trace()
         # o campo situacaoDiscente está com o nome duplicado, um escrito com Ç outro com C.
         # unificando o campos
@@ -333,11 +300,11 @@ class CapesDiscentes(object):
         df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
         df[u'NM_TESE_DISSERTACAO_exact'] = df[u'NM_TESE_DISSERTACAO'].apply(norm_keyword)
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
-        df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES']
+        df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES'].astype(str)
         df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR'].apply(norm_keyword)
         # Criando o campo Casos_excluidos_GeoCapes. Apenas com os valores sim e não,
         # é um campo estático, apenas para criar a variável.
-        data = {'excluidos': {0: 'Não', 1: 'sim'}}
+        data = {'excluidos': {0: 'Não', 1: 'Sim'}}
         df_casos = pd.DataFrame(data)
         # passa o valor do df_excluido para o campo criado no df principal
         df['Casos_Excluidos_GeoCapes'] = df_casos['excluidos']

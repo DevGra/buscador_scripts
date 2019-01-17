@@ -96,7 +96,7 @@ class CapesInstituicoes(object):
         # eliminando as colunas vazias do csv.
         df_inst = df_inst_temp.dropna(how = 'all', axis = 'columns')
         df_inst = df_inst.dropna(how = 'all', axis = 'rows')
-        print("Quantidade de linhas do arquivo {} linas".format(df_inst.count()))
+        print("Quantidade de linhas do arquivo {} linhas".format(df_inst.count()))
 
         # df_duplic = df_cad.duplicated(['NM_ENTIDADE_ENSINO_Capes'])
         # df_true = 0

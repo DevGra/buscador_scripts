@@ -137,6 +137,8 @@ class CapesProgramas(object):
         # -------- ADICIONANDO OS CAMPOS AO DF_DISCENTES PARA FAZER O MERGE COM PROGRAMAS E COM CADASTRO DE IES -------------
         df_programas['SG_ENTIDADE_ENSINO_Capes'] = df_programas['SG_ENTIDADE_ENSINO']
         df_programas['NM_ENTIDADE_ENSINO_Capes'] = df_programas['NM_ENTIDADE_ENSINO']
+        # drop de algumas colunas de programas que geram duplicidade com cadastro de instituicoes
+        df_programas = df_programas.drop(['DS_DEPENDENCIA_ADMINISTRATIVA','CS_STATUS_JURIDICO'], axis=1)
 
         return df_programas # retorna um (pandas.io.parsers.TextFileReader)
 
@@ -162,7 +164,7 @@ class CapesProgramas(object):
         df_cadastro_ies = df_cad_temp.dropna(how = 'all', axis = 'columns')
         df_cadastro_ies = df_cadastro_ies.dropna(how = 'all', axis = 'rows')
         # ----- DELETANDO O AN_BASE E DS_DEPENDENCIA_ADMINISTRATIVA PARA NÃO GERAR DUAS COLUNAS IGUAIS APÓS O MERGE ------
-        df_cadastro_ies = df_cadastro_ies.drop(['AN_BASE', 'DS_DEPENDENCIA_ADMINISTRATIVA', 'CS_STATUS_JURIDICO'], axis=1)
+        df_cadastro_ies = df_cadastro_ies.drop(['AN_BASE'], axis=1)
 
         # df_duplic = df_cad.duplicated(['NM_ENTIDADE_ENSINO_Capes'])
         # df_true = 0

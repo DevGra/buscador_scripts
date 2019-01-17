@@ -111,8 +111,8 @@
 
     <field name="NR_DOCUMENTO_DISCENTE" type="strings"/>
     <field name="AN_INICIO_CURSO" type="strings"/>
-    <field name="DT_MATRICULA_DISCENTE_order" type="strings"/>
-    <field name="DT_SITUACAO_DISCENTE_order" type="strings"/>
+    <!-- <field name="DT_MATRICULA_DISCENTE_order" type="int"/>
+    <field name="DT_SITUACAO_DISCENTE_order" type="int"/> -->
     <field name="idade_order" type="strings"/>
     <field name="Codigo_GEI" type="strings"/>
     <field name="CD_INST_GEI" type="strings"/>
@@ -125,12 +125,15 @@
     <field name="AN_BASE_facet" type="descendent_path"/>
     <field name="NM_REGIAO_facet" type="descendent_path"/>
     <field name="AREA_CONHECIMENTO_facet" type="descendent_path"/>
+    <field name="DT_MATRICULA_DISCENTE_order" type="descendent_path"/>
+    <field name="DT_SITUACAO_DISCENTE_order" type="descendent_path"/>
+    <field name="DT_MATRICULA_DISCENTE" type="descendent_path"/>
+    <field name="DT_SITUACAO_DISCENTE" type="descendent_path"/>
 
     <!-- mapeando os campos que serão usados para busca e nuvem de palavras
         e setando o tipo para o solr -->
     <field name="NM_PROGRAMA_IES" type="strings"/>
     <field name="NM_PROGRAMA_IDIOMA" type="strings"/>
-    <!-- <field name="NM_TESE_DISSERTACAO" type="strings"/> -->
     <field name="ID_PESSOA" type="strings"/>
     <field name="CD_PROGRAMA_IES" type="strings"/>
     <field name="NM_ORIENTADOR" type="strings"/>

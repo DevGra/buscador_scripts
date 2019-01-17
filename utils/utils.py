@@ -29,12 +29,11 @@ def data_facet(data):
         ano = data[:4]
         mes = data[4:6]
         dia = data[6:]
-        ano.sort()
-
+        
         return "{}|{}|{}".format(ano, mes, dia)
     except:
         return ''
-    
+
 
 def find_regiao(cod):
     regioes = {'Regiao Norte': [11, 12, 13, 14, 15, 16, 17],

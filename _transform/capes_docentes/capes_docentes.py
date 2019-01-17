@@ -6,10 +6,10 @@ import pandas as pd
 import codecs
 import csv
 import commands
-from datetime import datetime
+import datetime
 
 from settings import BASE_PATH_DATA
-from utils import *
+from utils.utils import *
 
 sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, '../../../buscador_scripts/')
@@ -35,7 +35,7 @@ class CapesDocentes(object):
 
         """
 
-        self.date = datetime.now()
+        self.date = datetime.datetime.now()
         self.arquivos = arquivos
         self.nome_arquivo = nome_arquivo
         self.input_lenght = 0
@@ -108,7 +108,11 @@ class CapesDocentes(object):
         df_docentes['SG_ENTIDADE_ENSINO_Capes'] = df_docentes['SG_ENTIDADE_ENSINO']
         df_docentes['NM_ENTIDADE_ENSINO_Capes'] = df_docentes['NM_ENTIDADE_ENSINO']
 
+        # remover a coluna que irão gerar conflito com instituições,
+        df_docentes = df_docentes.drop(['DS_DEPENDENCIA_ADMINISTRATIVA','CS_STATUS_JURIDICO'], axis=1)
+
         return df_docentes
+
 
     def pega_arquivo_programas_download(self):
         """Pega os arquivos do diretorio capes/programas, faz um append deles e os retorna"""
@@ -127,15 +131,15 @@ class CapesDocentes(object):
                 #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=10000, chunksize=1000, encoding='cp1252', low_memory=False)
 
         df_programas = pd.concat(df_auxiliar, sort=False)
-        # drop de algumas colunas de programas que geram duplicidade com discentes
-        df_programas = df_programas.drop(['NM_GRANDE_AREA_CONHECIMENTO','CD_AREA_AVALIACAO',
+        # drop de algumas colunas de programas que geram duplicidade com docentes
+        df_programas = df_programas.drop(['NM_GRANDE_AREA_CONHECIMENTO', 'NM_AREA_CONHECIMENTO','CD_AREA_AVALIACAO',
         'NM_AREA_AVALIACAO', 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', 'CS_STATUS_JURIDICO',
         'DS_DEPENDENCIA_ADMINISTRATIVA','NM_REGIAO', 'NM_MUNICIPIO_PROGRAMA_IES', 'NM_MODALIDADE_PROGRAMA',
         'NM_PROGRAMA_IES', 'SG_UF_PROGRAMA', 'NM_GRAU_PROGRAMA', 'CD_CONCEITO_PROGRAMA',
         'ID_ADD_FOTO_PROGRAMA_IES', 'ID_ADD_FOTO_PROGRAMA'], axis=1)
 
-
         return df_programas
+
 
     def pega_arquivo_cadastro_ies_capes(self):
         """pega os arquivos de cadastro CAPES IES que serão agregados aos Discentes"""
@@ -149,7 +153,7 @@ class CapesDocentes(object):
         df_cad_ies = df_cad_temp.dropna(how = 'all', axis = 'columns')
         df_cad_ies = df_cad_ies.dropna(how = 'all', axis = 'rows')
         # ----- DELETANDO O AN_BASE E DS_DEPENDENCIA_ADMINISTRATIVA PARA NÃO GERAR DUAS COLUNAS IGUAIS APÓS O MERGE ------
-        df_cad_ies = df_cad_ies.drop(['AN_BASE', 'DS_DEPENDENCIA_ADMINISTRATIVA', 'CS_STATUS_JURIDICO'], axis=1)
+        df_cad_ies = df_cad_ies.drop(['AN_BASE'], axis=1)
 
         return df_cad_ies
 
@@ -173,7 +177,8 @@ class CapesDocentes(object):
         df = self.merge_dataframes(df)
         # df == df_merg_doc_prog neste ponto
 
-        df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'])
+        df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'],suffixes=('_docentes', '_institu'))
+
         # Lista com as datas que devem ser formatadas
         parse_dates = ['DT_SITUACAO_PROGRAMA']
 
@@ -193,33 +198,19 @@ class CapesDocentes(object):
         df = df.join(dt_order)
         df['DT_SITUACAO_PROGRAMA_order'] = df['DT_SITUACAO_PROGRAMA_order'].apply(data_facet)
 
-
-        #import pdb; pdb.set_trace()
-        # o campo situacaoDiscente está com o nome duplicado, um escrito com Ç outro com C.
-        # unificando o campos
-        df['SituacaoDiscente'] = df['NM_SITUACAO_DISCENTE']
-        #df['SituacaoDiscente'].replace('MUDANCA DE NIVEL SEM DEFESA', 'MUDANÇA DE NIVEL SEM DEFESA', inplace=True)
-        df['IngressanteAno'] = df['ST_INGRESSANTE']
-        df['GrauAcademico'] = df['DS_GRAU_ACADEMICO_DISCENTE'].astype(str)
-
-
-        # Pra colocar a idade em ordem crescente
-        linha_idade = []
-        for row in df['DS_FAIXA_ETARIA'].sort_values():
-            linha_idade.append(row)
-        dt_idade = pd.DataFrame({'DS_FAIXA_ETARIA_order':linha_idade})
-        df = df.join(dt_idade)
-
         #df.sort_values(by='Idade', ascending=True)
-
+        df['ID_PESSOA'] = df['ID_PESSOA'].astype(str)
+        df['AN_TITULACAO'] = df['AN_TITULACAO'].astype(int)
         df['AN_BASE_facet'] = df['AN_BASE'].apply(gYear)
         df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
-        df['AREA_CONHECIMENTO_facet'] = df['NM_GRANDE_AREA_CONHECIMENTO'] + '|' + df['NM_AREA_CONHECIMENTO']
 
         # Campos setados do cadastro CAPES IES
         df['cat_insti'] = df['Tipo_de_Instituicao']
         df['CS_Natureza_Juridica'] = df['Nome_Natureza_Juridica-GEI']
         df['DS_ORGANIZACAO_ACADEMICA_Fapesp'] = df['DS_ORGANIZACAO_ACADEMICA-GEI']
+
+        # campos de busca
+        df['ID_PESSOA_exact'] = df['ID_PESSOA']
 
         #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
         # CAMPOS PARA BUSCA AVANÇADA
@@ -279,7 +270,7 @@ def capes_docentes_transform():
     PATH_ORIGEM = BASE_PATH_DATA + 'capes/docentes/download'
 
     try:
-        arquivos = os.listdir(path_origem)
+        arquivos = os.listdir(PATH_ORIGEM)
         arquivos.sort()
         arquivo_inicial = arquivos[0]
         nome_arquivo = arquivo_inicial.split('_')[0]
