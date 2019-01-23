@@ -200,7 +200,7 @@ class CapesDocentes(object):
 
         #df.sort_values(by='Idade', ascending=True)
         df['ID_PESSOA'] = df['ID_PESSOA'].astype(str)
-        df['AN_TITULACAO'] = df['AN_TITULACAO'].astype(int)
+        df['AN_TITULACAO'] = df[df['AN_TITULACAO'].notnull()]['AN_TITULACAO'].astype(int)
         df['AN_BASE_facet'] = df['AN_BASE'].apply(gYear)
         df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
 
@@ -211,6 +211,8 @@ class CapesDocentes(object):
 
         # campos de busca
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
+        df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
+
 
         #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
         # CAMPOS PARA BUSCA AVANÇADA

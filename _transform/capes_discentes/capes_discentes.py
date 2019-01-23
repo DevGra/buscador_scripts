@@ -99,9 +99,11 @@ class CapesDiscentes(object):
                     self.input_lenght = int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
                     print('Lendo o arquivo {}.......com o total de {} linhas.'.format(file, self.input_lenght - 1))
                     df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
+                    # pegar apenas 10.000 linhas do arquivo discentes
                     #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=10000, chunksize=1000, encoding='cp1252', low_memory=False)
 
         df_discentes = pd.concat(df_auxiliar, sort=False)
+        #df_discentes = df_auxiliar
 
         #----------- RENOMEAR NM_ENTIDADE_ENSINO DA FIOCRUZ PARA FUNDACAO OSWALDO CRUZ (FIOCRUZ)  ----------------
         df_discentes.replace('FUNDACAO OSWALDO CRUZ', 'FUNDACAO OSWALDO CRUZ (FIOCRUZ)', inplace=True)
@@ -135,10 +137,12 @@ class CapesDiscentes(object):
                 self.input_lenght += int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
                 print 'Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1)
                 df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
+                # pegar apenas 10.000 linhas do arquivo discentes
                 #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=10000, chunksize=1000, encoding='cp1252', low_memory=False)
 
         df_programas = pd.concat(df_auxiliar, sort=False)
-        # drop de algumas colunas de programas que geram duplicidade com discentes
+
+        #drop de algumas colunas de programas que geram duplicidade com discentes
         df_programas = df_programas.drop(['NM_GRANDE_AREA_CONHECIMENTO','CD_AREA_AVALIACAO',
         'NM_AREA_AVALIACAO', 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', 'CS_STATUS_JURIDICO',
         'DS_DEPENDENCIA_ADMINISTRATIVA','NM_REGIAO', 'NM_MUNICIPIO_PROGRAMA_IES', 'NM_MODALIDADE_PROGRAMA',
@@ -274,14 +278,7 @@ class CapesDiscentes(object):
         df['Genero'] = df['TP_SEXO_DISCENTE']
         df['ID_PESSOA'] = df['ID_PESSOA'].astype(str)
 
-        # Pra colocar a idade em ordem crescente
-        linha_idade = []
-        for row in df['DS_FAIXA_ETARIA'].sort_values():
-            linha_idade.append(row)
-        dt_idade = pd.DataFrame({'idade_order':linha_idade})
-        df = df.join(dt_idade)
-
-        #df.sort_values(by='Idade', ascending=True)
+        df['idade'] = df['DS_FAIXA_ETARIA']
 
         df['NM_PAIS_NACIONALIDADE_DISCENTE'].sort_values()
 
@@ -297,14 +294,15 @@ class CapesDiscentes(object):
         #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
         # CAMPOS PARA BUSCA AVANÇADA
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
-        df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
+        # df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
         df[u'NM_TESE_DISSERTACAO_exact'] = df[u'NM_TESE_DISSERTACAO'].apply(norm_keyword)
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
-        df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES'].astype(str)
+        #df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES'].apply(norm_keyword)
+
         df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR'].apply(norm_keyword)
         # Criando o campo Casos_excluidos_GeoCapes. Apenas com os valores sim e não,
         # é um campo estático, apenas para criar a variável.
-        data = {'excluidos': {0: 'Não', 1: 'Sim'}}
+        data = {'excluidos': {1: 'Sim - conceito do programa igual 1 e 2', 0: ' Não - conceito do programa igual a 3, 4, 5, 6, 7'}}
         df_casos = pd.DataFrame(data)
         # passa o valor do df_excluido para o campo criado no df principal
         df['Casos_Excluidos_GeoCapes'] = df_casos['excluidos']

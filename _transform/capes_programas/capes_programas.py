@@ -144,7 +144,7 @@ class CapesProgramas(object):
 
     def pega_arquivo_cadastro_ies_capes(self):
         """
-        Este método itera os arquivos de cadastro da CAPES IES em: BASE_PATH_DATA + 'capes/programas/cadastro_instituicoes/'
+        Este método itera os arquivos de cadastro da CAPES IES em: BASE_PATH_DATA + 'capes/instituicoes/download/'
         que será agregado ao programas e elimina as colunas e linhas vazias.
 
         PARAMETRO:
@@ -155,7 +155,7 @@ class CapesProgramas(object):
 
         """
 
-        var = '/var/tmp/solr_front/collections/capes/programas/cadastro_instituicoes/'
+        var = '/var/tmp/solr_front/collections/capes/instituicoes/download/'
         for root, dirs, files in os.walk(var):
             for file in files:
                 arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
@@ -214,11 +214,10 @@ class CapesProgramas(object):
 
         """
         df = self.pega_arquivo_nome()
-        df['SG_ENTIDADE_ENSINO_Capes'] = df['SG_ENTIDADE_ENSINO']
-        df['NM_ENTIDADE_ENSINO_Capes'] = df['NM_ENTIDADE_ENSINO']
+
         #import pdb; pdb.set_trace()
         df = self.merge_programas(df)
-        df.columns = df.columns.str.replace(' ', '_')
+        #df.columns = df.columns.str.replace(' ', '_')
 
         parse_dates = ['DT_SITUACAO_PROGRAMA']
 
@@ -236,10 +235,10 @@ class CapesProgramas(object):
         df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
         df['DT_SITUACAO_PROGRAMA'] = df['DT_SITUACAO_PROGRAMA'].astype(str)
         df['DT_SITUACAO_PROGRAMA_facet'] = df['DT_SITUACAO_PROGRAMA'].apply(data_facet)
-        df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
+        #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
 
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
-        df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
+
 
         # Campos setados do cadastro CAPES IES
         df['cat_insti'] = df['Tipo_de_Instituicao']

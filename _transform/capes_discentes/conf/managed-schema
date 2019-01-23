@@ -3,7 +3,8 @@
     <field name="id" type="string" indexed="true" stored="true" required="true" multiValued="false"/>
     <field name="_version_" type="long" indexed="true" stored="false"/>
     <field name="_root_" type="string" indexed="true" stored="false" docValues="false"/>
-    <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/>
+    <!-- <field name="_text_" type="text_general" indexed="true" stored="false" multiValued="true"/> -->
+    <field name="_text_" type="string" indexed="true" stored="false" multiValued="true"/>
 
     <copyField source="*" dest="_text_"/>
 
@@ -113,7 +114,7 @@
     <field name="AN_INICIO_CURSO" type="strings"/>
     <!-- <field name="DT_MATRICULA_DISCENTE_order" type="int"/>
     <field name="DT_SITUACAO_DISCENTE_order" type="int"/> -->
-    <field name="idade_order" type="strings"/>
+    <field name="idade" type="strings"/>
     <field name="Codigo_GEI" type="strings"/>
     <field name="CD_INST_GEI" type="strings"/>
     <field name="Casos_Excluidos_GeoCapes" type="strings"/>
@@ -133,18 +134,19 @@
     <!-- mapeando os campos que serão usados para busca e nuvem de palavras
         e setando o tipo para o solr -->
     <field name="NM_PROGRAMA_IES" type="strings"/>
-    <field name="NM_PROGRAMA_IDIOMA" type="strings"/>
+    <!-- <field name="NM_PROGRAMA_IDIOMA" type="strings"/> -->
     <field name="ID_PESSOA" type="strings"/>
     <field name="CD_PROGRAMA_IES" type="strings"/>
     <field name="NM_ORIENTADOR" type="strings"/>
 
     <!-- nome dos campos de busca -->
     <field name="NM_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/>
-    <field name="NM_PROGRAMA_IDIOMA_exact" type="string_busca_pt" indexed="true" stored="true"/>
+    <!-- <field name="NM_PROGRAMA_IDIOMA_exact" type="string_busca_pt" indexed="true" stored="true"/> -->
     <field name="NM_TESE_DISSERTACAO" type="string_busca_pt" indexed="true" stored="true"/>
     <field name="ID_PESSOA_exact" type="string_busca_pt" indexed="true" stored="true"/>
-    <field name="CD_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/>
+    <!-- <field name="CD_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/> -->
     <field name="NM_ORIENTADOR_exact" type="string_busca_pt" indexed="true" stored="true"/>
+    <field name="SG_INST_GEI" type="string_busca_pt" indexed="true" stored="true"/>
 
     <!-- nuvem de palavras -->
     <field name="TESE_DISSERTACAO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
@@ -155,9 +157,9 @@
     <copyField source="NM_PROGRAMA_IES" dest="PROGRAMA_IES_nuvem_palavras"/>
     <copyField source="NM_PROGRAMA_IES" dest="PROGRAMA_IES_busca"/>
 
-    <field name="PROGRAMA_IDIOMA_nuvem_palavras" type="text_en_stopword" multiValued="true" indexed="true" stored="true"/>
-    <copyField source="NM_PROGRAMA_IDIOMA" dest="PROGRAMA_IDIOMA_nuvem_palavras"/>
-    <copyField source="NM_PROGRAMA_IDIOMA" dest="PROGRAMA_IDIOMA_busca"/>
+    <field name="SG_INST_GEI_nuvem_palavras" type="text_en_stopword" multiValued="true" indexed="true" stored="true"/>
+    <copyField source="SG_INST_GEI" dest="SG_INST_GEI_nuvem_palavras"/>
+    <copyField source="SG_INST_GEI" dest="SG_INST_GEI_busca"/>
 
     <field name="ID_PESSOA_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="ID_PESSOA" dest="ID_PESSOA_nuvem_palavras"/>
