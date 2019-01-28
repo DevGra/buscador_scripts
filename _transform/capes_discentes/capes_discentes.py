@@ -105,7 +105,7 @@ class CapesDiscentes(object):
         df_discentes = pd.concat(df_auxiliar, sort=False)
         #df_discentes = df_auxiliar
 
-        #----------- RENOMEAR NM_ENTIDADE_ENSINO DA FIOCRUZ PARA FUNDACAO OSWALDO CRUZ (FIOCRUZ)  ----------------
+        #----------- RENOMEIA NM_ENTIDADE_ENSINO DA FIOCRUZ PARA FUNDACAO OSWALDO CRUZ (FIOCRUZ)  ----------------
         df_discentes.replace('FUNDACAO OSWALDO CRUZ', 'FUNDACAO OSWALDO CRUZ (FIOCRUZ)', inplace=True)
 
         # encodando o campo NM_SITUACAO_DISCENTE que esta gerando duplicidade de acento
@@ -298,17 +298,11 @@ class CapesDiscentes(object):
         df[u'NM_TESE_DISSERTACAO_exact'] = df[u'NM_TESE_DISSERTACAO'].apply(norm_keyword)
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
         #df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES'].apply(norm_keyword)
+        #df['SG_INST_GEI'] = df['SG_INST_GEI'].astype(str)
+        #df['SG_INST_GEI'] = df['SG_INST_GEI'].apply(lambda x: x.encode('ascii', 'ignore').strip())
 
-        df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR'].apply(norm_keyword)
-        # Criando o campo Casos_excluidos_GeoCapes. Apenas com os valores sim e não,
-        # é um campo estático, apenas para criar a variável.
-        data = {'excluidos': {1: 'Sim - conceito do programa igual 1 e 2', 0: ' Não - conceito do programa igual a 3, 4, 5, 6, 7'}}
-        df_casos = pd.DataFrame(data)
-        # passa o valor do df_excluido para o campo criado no df principal
-        df['Casos_Excluidos_GeoCapes'] = df_casos['excluidos']
-        df['Casos_Excluidos_GeoCapes'] = df['Casos_Excluidos_GeoCapes'].dropna()
-
-
+        # pega o CD_CONCEITO_PROGRAMA e separa os codigos 1 e 2 em sim, e o restante em não.
+        df['Casos_Excluidos_GeoCapes'] = df['CD_CONCEITO_PROGRAMA'].apply(lambda x: 'Sim – conceito do programa igual 1 e 2' if x < 3 else 'Não – conceito do programa igual a 3, 4, 5, 7')
         #df['AN_INICIO_CURSO'] = df['AN_INICIO_CURSO'].astype(str)
         #df['ANO_INICIO_PROGRAMA'] = df[df['ANO_INICIO_PROGRAMA'].notnull()]['ANO_INICIO_PROGRAMA'].astype(str)
         #df['ANO_MATRICULA_facet'] = df[df['DT_MATRICULA'].notnull()]['DT_MATRICULA'].dt.year.apply(gYear)

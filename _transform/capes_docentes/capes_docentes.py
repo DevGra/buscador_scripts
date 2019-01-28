@@ -41,7 +41,7 @@ class CapesDocentes(object):
         self.input_lenght = 0
         self.output_length = 0
         self.arq_prog = self.pega_arquivo_programas_download()
-        self.cadastro_ies = self.pega_arquivo_cadastro_ies_capes()
+        self.cadastro_ies = self.pega_arquivo_instituicoes()
 
         self.colunas = [
             'AN_BASE',
@@ -135,13 +135,13 @@ class CapesDocentes(object):
         df_programas = df_programas.drop(['NM_GRANDE_AREA_CONHECIMENTO', 'NM_AREA_CONHECIMENTO','CD_AREA_AVALIACAO',
         'NM_AREA_AVALIACAO', 'SG_ENTIDADE_ENSINO', 'NM_ENTIDADE_ENSINO', 'CS_STATUS_JURIDICO',
         'DS_DEPENDENCIA_ADMINISTRATIVA','NM_REGIAO', 'NM_MUNICIPIO_PROGRAMA_IES', 'NM_MODALIDADE_PROGRAMA',
-        'NM_PROGRAMA_IES', 'SG_UF_PROGRAMA', 'NM_GRAU_PROGRAMA', 'CD_CONCEITO_PROGRAMA',
+        'NM_PROGRAMA_IES', 'SG_UF_PROGRAMA', 'NM_GRAU_PROGRAMA', 'CD_CONCEITO_PROGRAMA', 'DT_SITUACAO_PROGRAMA',
         'ID_ADD_FOTO_PROGRAMA_IES', 'ID_ADD_FOTO_PROGRAMA'], axis=1)
 
         return df_programas
 
 
-    def pega_arquivo_cadastro_ies_capes(self):
+    def pega_arquivo_instituicoes(self):
         """pega os arquivos de cadastro CAPES IES que serão agregados aos Discentes"""
 
         var = '/var/tmp/solr_front/collections/capes/instituicoes/download'
@@ -179,24 +179,31 @@ class CapesDocentes(object):
 
         df = df.merge(self.cadastro_ies, on=['SG_ENTIDADE_ENSINO_Capes','NM_ENTIDADE_ENSINO_Capes'],suffixes=('_docentes', '_institu'))
 
-        # Lista com as datas que devem ser formatadas
-        parse_dates = ['DT_SITUACAO_PROGRAMA']
+        # Lista com as datas que devem ser formatadas - por enqunato, Não usadas em docentes
+        # parse_dates = ['DT_SITUACAO_PROGRAMA']
+        #
+        # for dt in parse_dates:
+        #     # Percorre a lista de datas e seta o formato da data que o datetime usará para a conversão, ou seja,
+        #     # a máscara do formato.
+        #     df[dt] = pd.to_datetime(df[dt], infer_datetime_format=False, format='%d%b%Y:%H:%M:%S', errors='coerce')
+        #
+        # # para ordenar a data para o facet
+        # linha_SITUACAO_PROGRAMA = []
+        # df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
+        # for row in df['DT_SITUACAO_PROGRAMA'].sort_values(ascending=False).astype(str):
+        #     linha_SITUACAO_PROGRAMA.append(row)
+        # # criando um dataframe com a coluna DT_MATRICULA_DISCENTE ordenada
+        # dt_order = pd.DataFrame({'DT_SITUACAO_PROGRAMA_order':linha_SITUACAO_PROGRAMA})
+        # # fazendo o join com o dataframe principal(df)
+        # df = df.join(dt_order)
+        # df['DT_SITUACAO_PROGRAMA_order'] = df['DT_SITUACAO_PROGRAMA_order'].apply(data_facet)
 
-        for dt in parse_dates:
-            # Percorre a lista de datas e seta o formato da data que o datetime usará para a conversão, ou seja,
-            # a máscara do formato.
-            df[dt] = pd.to_datetime(df[dt], infer_datetime_format=False, format='%d%b%Y:%H:%M:%S', errors='coerce')
+        # Tratando o erro de conversão de Float para int ou string e tratando valores NULL
+        df['AN_TITULACAO'] = pd.to_numeric(df['AN_TITULACAO'], errors='coerce')
+        df['AN_TITULACAO'] = df[df['AN_TITULACAO'].notnull()]['AN_TITULACAO'].astype(int).astype(str)
 
-        # para ordenar a data para o facet
-        linha_SITUACAO_PROGRAMA = []
-        df['DT_SITUACAO_PROGRAMA'] = df[dt].dt.strftime('%Y%m%d')
-        for row in df['DT_SITUACAO_PROGRAMA'].sort_values(ascending=False).astype(str):
-            linha_SITUACAO_PROGRAMA.append(row)
-        # criando um dataframe com a coluna DT_MATRICULA_DISCENTE ordenada
-        dt_order = pd.DataFrame({'DT_SITUACAO_PROGRAMA_order':linha_SITUACAO_PROGRAMA})
-        # fazendo o join com o dataframe principal(df)
-        df = df.join(dt_order)
-        df['DT_SITUACAO_PROGRAMA_order'] = df['DT_SITUACAO_PROGRAMA_order'].apply(data_facet)
+        df['CD_AREA_BASICA_TITULACAO'] = pd.to_numeric(df['CD_AREA_BASICA_TITULACAO'], errors='coerce')
+        df['CD_AREA_BASICA_TITULACAO'] = df[df['CD_AREA_BASICA_TITULACAO'].notnull()]['CD_AREA_BASICA_TITULACAO'].astype(int).astype(str)
 
         #df.sort_values(by='Idade', ascending=True)
         df['ID_PESSOA'] = df['ID_PESSOA'].astype(str)
@@ -209,19 +216,11 @@ class CapesDocentes(object):
         df['CS_Natureza_Juridica'] = df['Nome_Natureza_Juridica-GEI']
         df['DS_ORGANIZACAO_ACADEMICA_Fapesp'] = df['DS_ORGANIZACAO_ACADEMICA-GEI']
 
-        # campos de busca
+        # CAMPOS PARA BUSCA AVANÇADA
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
 
-
         #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
-        # CAMPOS PARA BUSCA AVANÇADA
-        # df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
-        # df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
-        # df[u'NM_TESE_DISSERTACAO_exact'] = df[u'NM_TESE_DISSERTACAO'].apply(norm_keyword)
-        # df['ID_PESSOA_exact'] = df['ID_PESSOA']
-        # df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES']
-        # df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR'].apply(norm_keyword)
 
         print 'df pronto para gerar'
         import pdb; pdb.set_trace()
