@@ -210,6 +210,7 @@ class CapesDocentes(object):
         df['AN_TITULACAO'] = df[df['AN_TITULACAO'].notnull()]['AN_TITULACAO'].astype(int)
         df['AN_BASE_facet'] = df['AN_BASE'].apply(gYear)
         df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
+        #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
 
         # Campos setados do cadastro CAPES IES
         df['cat_insti'] = df['Tipo_de_Instituicao']
@@ -220,9 +221,16 @@ class CapesDocentes(object):
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
 
-        #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
+        # Tratamento para os valores que são NULL e NaN, pois, ambos devem aparecer na contagem dos CAMPOS
+        # abaixo em docentes
+        df['DS_FAIXA_ETARIA'].fillna('Sem informação' , inplace=True)
+        df['DS_TIPO_VINCULO_DOCENTE_IES'].fillna('Sem informação' , inplace=True)
+        df['NM_GRAU_TITULACAO'].fillna('Sem informação' , inplace=True)
+        df['CD_CAT_BOLSA_PRODUTIVIDADE'].fillna('Não se aplica' , inplace=True)
+        # pega o CD_CONCEITO_PROGRAMA e separa os codigos 1 e 2 em sim, e o restante em não.
+        df['Casos_Excluidos_GeoCapes'] = df['CD_CONCEITO_PROGRAMA'].apply(lambda x: 'Sim – conceito do programa igual 1 e 2' if x < 3 else 'Não – conceito do programa igual a 3, 4, 5, 7')
 
-        print 'df pronto para gerar'
+        print 'df pronto para gerar o csv'
         import pdb; pdb.set_trace()
 
         return df

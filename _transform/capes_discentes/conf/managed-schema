@@ -118,6 +118,8 @@
     <field name="CD_INST_GEI" type="strings"/>
     <field name="SG_INST_GEI" type="strings"/>
     <field name="ID_PESSOA" type="strings"/>
+    <field name="NM_ORIENTADOR" type="strings"/>
+    <field name="NM_TESE_DISSERTACAO" type="strings"/>
     <field name="Casos_Excluidos_GeoCapes" type="strings"/>
     <field name="Codigo_do_Tipo_de_Instituicao" type="int"/>
     <field name="Codigo_Natureza_Juridica-GEI" type="int"/>
@@ -141,17 +143,17 @@
     <!-- nome dos campos de busca -->
     <!-- <field name="NM_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/>
     <field name="NM_PROGRAMA_IDIOMA_exact" type="string_busca_pt" indexed="true" stored="true"/> -->
-    <field name="NM_TESE_DISSERTACAO" type="string_busca_pt" indexed="true" stored="true"/>
-    <!-- <field name="ID_PESSOA_exact" type="string_busca_pt" indexed="true" stored="true"/>
+        <!-- <field name="ID_PESSOA_exact" type="string_busca_pt" indexed="true" stored="true"/>
     <field name="CD_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/> -->
-    <field name="NM_ORIENTADOR" type="string_busca_pt" indexed="true" stored="true"/>
+    <field name="NM_TESE_DISSERTACAO_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_ORIENTADOR_exact" type="commaDelimited" indexed="true" stored="true"/>
 
     <!-- nuvem de palavras -->
     <field name="TESE_DISSERTACAO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="NM_TESE_DISSERTACAO" dest="TESE_DISSERTACAO_nuvem_palavras"/>
     <copyField source="NM_TESE_DISSERTACAO" dest="TESE_DISSERTACAO_busca"/>
 
-    <field name="NM_ORIENTADOR_nuvem_palavras" type="string_busca_pt" multiValued="true" indexed="true" stored="true"/>
+    <field name="NM_ORIENTADOR_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="NM_ORIENTADOR" dest="NM_ORIENTADOR_nuvem_palavras"/>
     <copyField source="NM_ORIENTADOR" dest="NM_ORIENTADOR_busca"/>
 
@@ -299,4 +301,5 @@
             <tokenizer class="solr.PatternTokenizerFactory" pattern=",\s*"/>
         </analyzer>
     </fieldType>
+
 </schema>

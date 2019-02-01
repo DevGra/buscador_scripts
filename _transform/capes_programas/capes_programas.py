@@ -120,18 +120,15 @@ class CapesProgramas(object):
         df_auxiliar = []
         for root, dirs, files in os.walk(var):
             for file in files:
-                if file in self.arquivos:
-                    print file
-                    arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
-                    self.input_lenght += int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
-                    print 'Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1)
-                    df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
-                    #df_auxiliar = pd.read_csv(arquivo, sep=';', low_memory=False, encoding='latin-1')
-                    #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=1000, chunksize=500, encoding='latin-1', low_memory=False)
-                    #df_enade = pd.read_csv(arquivo, sep=';', low_memory=False)
-                    #df_enade = df_enade.loc[:, self.colunas]
+                print file
+                arquivo = codecs.open(os.path.join(root, file), 'r')  # , encoding='latin-1')
+                self.input_lenght += int(commands.getstatusoutput('cat ' + os.path.join(root, file) + ' |wc -l ')[1])
+                print 'Arquivo de entrada possui {} linhas de informacao'.format(int(self.input_lenght) - 1)
+                df_auxiliar.append(pd.read_csv(arquivo, sep=';', low_memory=False, encoding='cp1252'))
+                #df_auxiliar = pd.read_csv(arquivo, sep=';', low_memory=False, encoding='latin-1')
+                #df_auxiliar = pd.read_csv(arquivo, sep=';', nrows=1000, chunksize=500, encoding='latin-1', low_memory=False)
         #import pdb;pdb.set_trace()  #para testar o código
-        df_programas = pd.concat(df_auxiliar)
+        df_programas = pd.concat(df_auxiliar, sort=False)
         #----------- RENOMEAR NM_ENTIDADE_ENSINO DA FIOCRUZ PARA FUNDACAO OSWALDO CRUZ (FIOCRUZ)  ----------------
         df_programas.replace('FUNDACAO OSWALDO CRUZ', 'FUNDACAO OSWALDO CRUZ (FIOCRUZ)', inplace=True)
         # -------- ADICIONANDO OS CAMPOS AO DF_DISCENTES PARA FAZER O MERGE COM PROGRAMAS E COM CADASTRO DE IES -------------
@@ -177,10 +174,10 @@ class CapesProgramas(object):
         """
         Este método recebe um dataframe como parâmetro e faz o merge dele com
         o atributo self.ies, que recebe o método pega_arquivo_cadastro_ies_capes,
-        passando como chave o campo SG_ENTIDE_ENSINO_Capes.
+        passando como chave o campo SG_ENTIDE_ENSINO_Capes e o NM_ENTIDADE_ENSINO_Capes.
 
         PARAMETRO:
-            Recebe um dataframe como parâmetro, que o retorno do método pega_arquivo_nome.
+            Recebe um dataframe como parâmetro, que é o retorno do método pega_arquivo_nome.
 
         RETORNO:
             Retorna o dataframe com todas as linhas e colunas agregadas.
@@ -265,8 +262,10 @@ class CapesProgramas(object):
         df_capes = self.resolve_dicionarios()
 
         destino_transform = '/var/tmp/solr_front/collections/capes/programas/transform'
-        csv_file = '/capes_programas_' + self.nome_arquivo + '.csv'
-        log_file = '/capes_programas_' + self.nome_arquivo + '.log'
+        # csv_file = '/capes_programas_' + self.nome_arquivo + '.csv'
+        # log_file = '/capes_programas_' + self.nome_arquivo + '.log'
+        csv_file = '/capes_programas_completo.csv'
+        log_file = '/capes_programas_completo.log'
 
         try:
             os.makedirs(destino_transform)
@@ -274,8 +273,9 @@ class CapesProgramas(object):
             if e.errno != errno.EEXIST:
                 raise
 
-        df_capes.to_csv(destino_transform + csv_file, sep=';', index=False, encoding='utf8') #'line_terminator='\n', quoting=csv.QUOTE_ALL)
-        self.output_length = commands.getstatusoutput('cat' + destino_transform + csv_file + ' |wc -l')[1]
+        df_capes.to_csv(destino_transform + csv_file, sep=';', index=False, encoding='utf8',
+                        line_terminator='\n', quoting=csv.QUOTE_ALL)
+        self.output_length = commands.getstatusoutput('cat ' + destino_transform + csv_file + ' |wc -l')[1]
         print 'Arquivo de saida possui {} linhas de informacao'.format(int(self.output_length) - 1)
 
         with open(destino_transform + log_file, 'w') as log:
@@ -304,15 +304,14 @@ def capes_programas_transform():
     try:
         arquivos = os.listdir(PATH_ORIGEM)
         arquivos.sort()
-        # tamanho_arquivo = len(arquivos) - 1
-        # arquivo_inicial = arquivos[0].split('.')[0]
-        # arquivo_final = arquivos[tamanho_arquivo].split('.')[0]
-        # nome_arquivo = arquivo_inicial +'_a_'+ arquivo_final
-        for arquivo in arquivos:
-            nome_arquivo = arquivo.split('.')[0]
-            capes_doc = CapesProgramas(arquivo, nome_arquivo)
-            capes_doc.gera_csv()
-        print('Arquivo {} finalizado!'.format(arquivo))
+
+        arquivo_inicial = arquivos[0]
+        nome_arquivo = arquivo_inicial.split('_')[0]
+
+        capes_doc = CapesProgramas(arquivos, nome_arquivo)
+        capes_doc.gera_csv()
+        print('Arquivo {} finalizado!'.format(nome_arquivo))
+
 
     except OSError:
         print('Nenhum arquivo encontrado')

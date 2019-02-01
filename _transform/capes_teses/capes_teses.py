@@ -110,8 +110,15 @@ class CapesTeses(object):
             'NM_AREA_CONHECIMENTO']
         df['DS_PALAVRA_CHAVE_exact'] = df['DS_PALAVRA_CHAVE'].apply(norm_keyword)
         df['DS_KEYWORD_exact'] = df['DS_KEYWORD'].apply(norm_keyword)
+        df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR']
+        df['NM_DISCENTE_exact'] = df['NM_DISCENTE']
 
         df['TITULO_RESUMO'] = df['NM_PRODUCAO'] + '\n' + df['DS_RESUMO']
+
+        df['DT_MATRICULA'] = df[dt].dt.strftime('%Y%m%d')
+        df['DT_MATRICULA'] = df['DT_MATRICULA'].apply(data_facet).astype(str)
+        df['DT_TITULACAO'] = df[dt].dt.strftime('%Y%m%d')
+        df['DT_TITULACAO'] = df['DT_TITULACAO'].apply(data_facet).astype(str)
         #import pdb; pdb.set_trace()
         return df
 

@@ -124,13 +124,15 @@
     <field name="DS_ABSTRACT" type="text"/>
     <field name="DS_KEYWORD" type="text"/>
     <field name="DS_PALAVRA_CHAVE" type="strings"/>
+    <field name="NM_ORIENTADOR" type="strings"/>
+    <field name="NM_DISCENTE" type="strings"/>
     <field name="DS_RESUMO" type="text"/>
     <field name="TITULO_RESUMO" type="text"/>
 
-
     <field name="DS_PALAVRA_CHAVE_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_ORIENTADOR_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_DISCENTE_exact" type="commaDelimited" indexed="true" stored="true"/>
     <field name="DS_KEYWORD_exact" type="commaDelimited" indexed="true" stored="true"/>
-
 
     <!--<copyField source="DS_PALAVRA_CHAVE" dest="DS_PALAVRA_CHAVE_exact"/>-->
 
@@ -145,7 +147,6 @@
     <copyField source="DS_ABSTRACT" dest="DS_ABSTRACT_busca"/>
     <copyField source="DS_ABSTRACT" dest="DS_ABSTRACT_str_search"/>
 
-
     <field name="DS_RESUMO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
     <field name="DS_RESUMO_str_search" type="string_busca_pt" indexed="true" stored="true"/>
 
@@ -157,12 +158,20 @@
     <copyField source="NM_PRODUCAO" dest="NM_PRODUCAO_nuvem_palavras"/>
     <copyField source="NM_PRODUCAO" dest="NM_PRODUCAO_busca"/>
 
-
     <field name="DS_PALAVRA_CHAVE_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true"
            stored="true"/>
     <copyField source="DS_PALAVRA_CHAVE" dest="DS_PALAVRA_CHAVE_nuvem_palavras"/>
     <copyField source="DS_PALAVRA_CHAVE" dest="DS_PALAVRA_CHAVE_busca"/>
 
+    <field name="NM_ORIENTADOR_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true"
+           stored="true"/>
+    <copyField source="NM_ORIENTADOR" dest="NM_ORIENTADOR_nuvem_palavras"/>
+    <copyField source="NM_ORIENTADOR" dest="NM_ORIENTADOR_busca"/>
+
+    <field name="NM_DISCENTE_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true"
+           stored="true"/>
+    <copyField source="NM_DISCENTE" dest="NM_DISCENTE_nuvem_palavras"/>
+    <copyField source="NM_DISCENTE" dest="NM_DISCENTE_busca"/>
 
     <fieldType name="descendent_path" class="solr.TextField">
         <analyzer type="index">

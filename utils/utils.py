@@ -29,7 +29,7 @@ def data_facet(data):
         ano = data[:4]
         mes = data[4:6]
         dia = data[6:]
-        
+
         return "{}|{}|{}".format(ano, mes, dia)
     except:
         return ''

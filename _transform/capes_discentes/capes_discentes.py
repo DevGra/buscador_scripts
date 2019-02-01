@@ -297,9 +297,11 @@ class CapesDiscentes(object):
         # df['NM_PROGRAMA_IDIOMA_exact'] = df['NM_PROGRAMA_IDIOMA']
         df[u'NM_TESE_DISSERTACAO_exact'] = df[u'NM_TESE_DISSERTACAO'].apply(norm_keyword)
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
+        df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR']
         #df['CD_PROGRAMA_IES_exact'] = df['CD_PROGRAMA_IES'].apply(norm_keyword)
         #df['SG_INST_GEI'] = df['SG_INST_GEI'].astype(str)
         #df['SG_INST_GEI'] = df['SG_INST_GEI'].apply(lambda x: x.encode('ascii', 'ignore').strip())
+
 
         # pega o CD_CONCEITO_PROGRAMA e separa os codigos 1 e 2 em sim, e o restante em não.
         df['Casos_Excluidos_GeoCapes'] = df['CD_CONCEITO_PROGRAMA'].apply(lambda x: 'Sim – conceito do programa igual 1 e 2' if x < 3 else 'Não – conceito do programa igual a 3, 4, 5, 7')

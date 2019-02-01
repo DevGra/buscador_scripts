@@ -121,14 +121,14 @@
     <field name="ID_PESSOA" type="strings"/>
 
     <!-- nome dos campos de busca -->
-    <field name="NM_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/>
+    <!-- <field name="NM_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/>
     <field name="ID_PESSOA_exact" type="string_busca_pt" indexed="true" stored="true"/>
-    <field name="CD_PROGRAMA_IES" type="string_busca_pt" indexed="true" stored="true"/>
+    <field name="CD_PROGRAMA_IES" type="string_busca_pt" indexed="true" stored="true"/> -->
     <field name="CD_AREA_BASICA_TITULACAO" type="string_busca_pt" indexed="true" stored="true"/>
-    <field name="SG_INST_GEI" type="string_busca_pt" indexed="true" stored="true"/>
+
 
     <!-- nuvem de palavras -->
-    <field name="PROGRAMA_IES_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
+    <!-- <field name="PROGRAMA_IES_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="NM_PROGRAMA_IES" dest="PROGRAMA_IES_nuvem_palavras"/>
     <copyField source="NM_PROGRAMA_IES" dest="PROGRAMA_IES_busca"/>
 
@@ -138,15 +138,15 @@
 
     <field name="CD_PROGRAMA_IES_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="CD_PROGRAMA_IES" dest="CD_PROGRAMA_IES_nuvem_palavras"/>
-    <copyField source="CD_PROGRAMA_IES" dest="CD_PROGRAMA_IES_busca"/>
+    <copyField source="CD_PROGRAMA_IES" dest="CD_PROGRAMA_IES_busca"/> -->
 
     <field name="CD_AREA_BASICA_TITULACAO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="CD_AREA_BASICA_TITULACAO" dest="CD_AREA_BASICA_TITULACAO_nuvem_palavras"/>
     <copyField source="CD_AREA_BASICA_TITULACAO" dest="CD_AREA_BASICA_TITULACAO_busca"/>
 
-    <field name="SG_INST_GEI_nuvem_palavras" type="text_en_stopword" multiValued="true" indexed="true" stored="true"/>
+    <!-- <field name="SG_INST_GEI_nuvem_palavras" type="text_en_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="SG_INST_GEI" dest="SG_INST_GEI_nuvem_palavras"/>
-    <copyField source="SG_INST_GEI" dest="SG_INST_GEI_busca"/>
+    <copyField source="SG_INST_GEI" dest="SG_INST_GEI_busca"/> -->
 
     <fieldType name="descendent_path" class="solr.TextField">
         <analyzer type="index">
