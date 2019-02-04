@@ -200,14 +200,14 @@ class CapesDocentes(object):
 
         # Tratando o erro de conversão de Float para int ou string e tratando valores NULL
         df['AN_TITULACAO'] = pd.to_numeric(df['AN_TITULACAO'], errors='coerce')
-        df['AN_TITULACAO'] = df[df['AN_TITULACAO'].notnull()]['AN_TITULACAO'].astype(int).astype(str)
+        df['AN_TITULACAO'] = df[df['AN_TITULACAO'].notnull()]['AN_TITULACAO'].astype(int)
 
         df['CD_AREA_BASICA_TITULACAO'] = pd.to_numeric(df['CD_AREA_BASICA_TITULACAO'], errors='coerce')
         df['CD_AREA_BASICA_TITULACAO'] = df[df['CD_AREA_BASICA_TITULACAO'].notnull()]['CD_AREA_BASICA_TITULACAO'].astype(int).astype(str)
 
         #df.sort_values(by='Idade', ascending=True)
         df['ID_PESSOA'] = df['ID_PESSOA'].astype(str)
-        df['AN_TITULACAO'] = df[df['AN_TITULACAO'].notnull()]['AN_TITULACAO'].astype(int)
+        df['AN_TITULACAO'] = df[df['AN_TITULACAO'].notnull()]['AN_TITULACAO'].astype(int).astype(str)
         df['AN_BASE_facet'] = df['AN_BASE'].apply(gYear)
         df['NM_REGIAO_facet'] = df['NM_REGIAO'] + '|' + df['SG_UF_PROGRAMA'] + '|' + df['NM_MUNICIPIO_PROGRAMA_IES']
         #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
@@ -221,7 +221,7 @@ class CapesDocentes(object):
         df['ID_PESSOA_exact'] = df['ID_PESSOA']
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
 
-        # Tratamento para os valores que são NULL e NaN, pois, ambos devem aparecer na contagem dos CAMPOS
+        # Tratamento para os valores que são NULL e NaN, pois, ambos devem aparecer na contagem(buscador) dos CAMPOS
         # abaixo em docentes
         df['DS_FAIXA_ETARIA'].fillna('Sem informação' , inplace=True)
         df['DS_TIPO_VINCULO_DOCENTE_IES'].fillna('Sem informação' , inplace=True)
