@@ -117,28 +117,49 @@
     <field name="GEOGRAFICO_IES_facet" type="descendent_path"/>
     <field name="AREA_CONHECIMENTO_facet" type="descendent_path"/>
 
+    <!-- campos mapeados para uso em busca por palavras, busca textual ou campos
+    que o solr identifica algum erro de tipo, ex: era pra ser str e o campo é int -->
     <field name="NR_VOLUME" type="strings"/>
     <field name="NM_PRODUCAO" type="text"/>
     <field name="CD_SUBAREA_CONHECIMENTO" type="strings"/>
+    <field name="NM_PROGRAMA" type="strings"/>
+    <field name="NM_AREA_CONCENTRACAO" type="strings"/>
+    <field name="NM_LINHA_PESQUISA" type="strings"/>
+    <field name="NM_ENTIDADE_ENSINO" type="strings"/>
     <field name="CD_ESPECIALIDADE" type="strings"/>
     <field name="DS_ABSTRACT" type="text"/>
     <field name="DS_KEYWORD" type="text"/>
     <field name="DS_PALAVRA_CHAVE" type="strings"/>
     <field name="NM_ORIENTADOR" type="strings"/>
+    <field name="NM_PROJETO" type="strings"/>
     <field name="NM_DISCENTE" type="strings"/>
     <field name="DS_RESUMO" type="text"/>
     <field name="TITULO_RESUMO" type="text"/>
+    <!-- <field name="NR_PAGINAS" type="strings"/> -->
 
     <field name="DS_PALAVRA_CHAVE_exact" type="commaDelimited" indexed="true" stored="true"/>
     <field name="NM_ORIENTADOR_exact" type="commaDelimited" indexed="true" stored="true"/>
     <field name="NM_DISCENTE_exact" type="commaDelimited" indexed="true" stored="true"/>
     <field name="DS_KEYWORD_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_PROJETO_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_PROGRAMA_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_AREA_CONCENTRACAO_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_LINHA_PESQUISA_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_AREA_AVALIACAO_exact" type="commaDelimited" indexed="true" stored="true"/>
+    <field name="NM_ENTIDADE_ENSINO_exact" type="commaDelimited" indexed="true" stored="true"/>
 
-    <!--<copyField source="DS_PALAVRA_CHAVE" dest="DS_PALAVRA_CHAVE_exact"/>-->
+    <!-- campos de busca por palavras -->
+    <field name="NM_AREA_CONHECIMENTO" type="string_busca_pt" indexed="true" stored="true"/>
+    <field name="NM_AREA_AVALIACAO" type="string_busca_pt" indexed="true" stored="true"/>
 
+    <!-- campos de busca por textos exatos -->
     <field name="DS_KEYWORD_nuvem_palavras" type="text_en_stopword" multiValued="true" indexed="true" stored="true"/>
     <copyField source="DS_KEYWORD" dest="DS_KEYWORD_nuvem_palavras"/>
     <copyField source="DS_KEYWORD" dest="DS_KEYWORD_busca"/>
+
+    <field name="NM_PROJETO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
+    <copyField source="NM_PROJETO" dest="NM_PROJETO_nuvem_palavras"/>
+    <copyField source="NM_PROJETO" dest="NM_PROJETO_busca"/>
 
     <field name="DS_ABSTRACT_nuvem_palavras" type="text_en_stopword" multiValued="true" indexed="true" stored="true"/>
     <field name="DS_ABSTRACT_str_search" type="string_busca_en" indexed="true" stored="true"/>
@@ -172,6 +193,35 @@
            stored="true"/>
     <copyField source="NM_DISCENTE" dest="NM_DISCENTE_nuvem_palavras"/>
     <copyField source="NM_DISCENTE" dest="NM_DISCENTE_busca"/>
+
+    <field name="NM_PROGRAMA_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true"
+           stored="true"/>
+    <copyField source="NM_PROGRAMA" dest="NM_PROGRAMA_nuvem_palavras"/>
+    <copyField source="NM_PROGRAMA" dest="NM_PROGRAMA_busca"/>
+
+    <field name="NM_AREA_CONCENTRACAO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true"
+           stored="true"/>
+    <copyField source="NM_AREA_CONCENTRACAO" dest="NM_AREA_CONCENTRACAO_nuvem_palavras"/>
+    <copyField source="NM_AREA_CONCENTRACAO" dest="NM_AREA_CONCENTRACAO_busca"/>
+
+    <field name="NM_LINHA_PESQUISA_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true"
+           stored="true"/>
+    <copyField source="NM_LINHA_PESQUISA" dest="NM_LINHA_PESQUISA_nuvem_palavras"/>
+    <copyField source="NM_LINHA_PESQUISA" dest="NM_LINHA_PESQUISA_busca"/>
+
+    <field name="NM_ENTIDADE_ENSINO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true"
+           stored="true"/>
+    <copyField source="NM_ENTIDADE_ENSINO" dest="NM_ENTIDADE_ENSINO_nuvem_palavras"/>
+    <copyField source="NM_ENTIDADE_ENSINO" dest="NM_ENTIDADE_ENSINO_busca"/>
+
+    <field name="NM_AREA_CONHECIMENTO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
+    <copyField source="NM_AREA_CONHECIMENTO" dest="NM_AREA_CONHECIMENTO_nuvem_palavras"/>
+    <copyField source="NM_AREA_CONHECIMENTO" dest="NM_AREA_CONHECIMENTO_busca"/>
+
+    <field name="NM_AREA_AVALIACAO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
+    <copyField source="NM_AREA_AVALIACAO" dest="NM_AREA_AVALIACAO_nuvem_palavras"/>
+    <copyField source="NM_AREA_AVALIACAO" dest="NM_AREA_AVALIACAO_busca"/>
+
 
     <fieldType name="descendent_path" class="solr.TextField">
         <analyzer type="index">

@@ -88,30 +88,37 @@ class CapesTeses(object):
                 df[dt] = pd.to_datetime(df[dt], infer_datetime_format=False, format='%d%b%Y:%H:%M:%S', errors='coerce')
 
         df['AN_BASE'] = df['AN_BASE'].fillna(self.ano).astype(int)
-        df['ID_ADD_PRODUCAO_INTELECTUAL'] = df['ID_ADD_PRODUCAO_INTELECTUAL'].fillna(0).astype(int)
-        df['ID_PRODUCAO_INTELECTUAL'] = df['ID_PRODUCAO_INTELECTUAL'].fillna(0).astype(int)
-        df['ID_SUBTIPO_PRODUCAO'] = df['ID_SUBTIPO_PRODUCAO'].fillna(0).astype(int)
-        df['IN_ORIENT_PARTICIPOU_BANCA'] = df['IN_ORIENT_PARTICIPOU_BANCA'].fillna(0).astype(int)
-        df['ID_PESSOA_DISCENTE'] = df['ID_PESSOA_DISCENTE'].fillna(0).astype(int)
-        df['ID_GRAU_ACADEMICO'] = df['ID_GRAU_ACADEMICO'].fillna(0).astype(int)
-        df['CD_GRANDE_AREA_CONHECIMENTO'] = df['CD_GRANDE_AREA_CONHECIMENTO'].fillna(0).astype(int)
-        df['CD_AREA_CONHECIMENTO'] = df['CD_AREA_CONHECIMENTO'].fillna(0).astype(int)
+        #df['ID_ADD_PRODUCAO_INTELECTUAL'] = df['ID_ADD_PRODUCAO_INTELECTUAL'].fillna(0).astype(int)
+        #df['ID_PRODUCAO_INTELECTUAL'] = df['ID_PRODUCAO_INTELECTUAL'].fillna(0).astype(int)
+        #df['ID_SUBTIPO_PRODUCAO'] = df['ID_SUBTIPO_PRODUCAO'].fillna(0).astype(int)
+        #df['IN_ORIENT_PARTICIPOU_BANCA'] = df['IN_ORIENT_PARTICIPOU_BANCA'].fillna(0).astype(int)
+        #df['ID_PESSOA_DISCENTE'] = df['ID_PESSOA_DISCENTE'].fillna(0).astype(int)
+        #df['ID_GRAU_ACADEMICO'] = df['ID_GRAU_ACADEMICO'].fillna(0).astype(int)
+        #df['CD_GRANDE_AREA_CONHECIMENTO'] = df['CD_GRANDE_AREA_CONHECIMENTO'].fillna(0).astype(int)
+        #df['CD_AREA_CONHECIMENTO'] = df['CD_AREA_CONHECIMENTO'].fillna(0).astype(int)
         df['NR_PAGINAS'] = df['NR_PAGINAS'].fillna(0).astype(int)
 
         df['AN_BASE_facet'] = gYear(self.ano)
         df['ANO_MATRICULA_facet'] = df[df['DT_MATRICULA'].notnull()]['DT_MATRICULA'].dt.year.apply(gYear)
         #df['ANO_MATRICULA_facet'] = df[df['DT_MATRICULA'].dt.year == '2013']['DT_MATRICULA'].dt.year.apply(gYear)
-
         df['ANO_TITULACAO_facet'] = df['DT_TITULACAO'].dt.year.apply(gYear)
         df['ANO_INICIO_LINHA_facet'] = df['DH_INICIO_LINHA'].dt.year.apply(gYear)
         df['ANO_FIM_LINHA_facet'] = df['DH_FIM_LINHA'].dt.year.apply(gYear)
         df['GEOGRAFICO_IES_facet'] = df['NM_REGIAO'] + '|' + df['NM_UF_IES'] + '-' + df['SG_UF_IES']
         df['AREA_CONHECIMENTO_facet'] = df['NM_GRANDE_AREA_CONHECIMENTO'] + '|' + df[
             'NM_AREA_CONHECIMENTO']
+
         df['DS_PALAVRA_CHAVE_exact'] = df['DS_PALAVRA_CHAVE'].apply(norm_keyword)
         df['DS_KEYWORD_exact'] = df['DS_KEYWORD'].apply(norm_keyword)
         df['NM_ORIENTADOR_exact'] = df['NM_ORIENTADOR']
         df['NM_DISCENTE_exact'] = df['NM_DISCENTE']
+        df['NM_PROJETO_exact'] = df['NM_PROJETO']
+        df['NM_PROGRAMA_exact'] = df['NM_PROGRAMA']
+        df['NM_AREA_CONCENTRACAO_exact'] = df['NM_AREA_CONCENTRACAO']
+        df['NM_LINHA_PESQUISA_exact'] = df['NM_LINHA_PESQUISA']
+        df['NM_ENTIDADE_ENSINO_exact'] = df['NM_ENTIDADE_ENSINO']
+        df['NM_AREA_AVALIACAO_exact'] = df['NM_AREA_AVALIACAO'].apply(norm_palavra_avaliacao)
+        df['NM_AREA_CONHECIMENTO'] = df['NM_AREA_CONHECIMENTO'].apply(norm_keyword).upper()
 
         df['TITULO_RESUMO'] = df['NM_PRODUCAO'] + '\n' + df['DS_RESUMO']
 

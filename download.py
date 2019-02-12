@@ -14,9 +14,9 @@ from _download.rais_estabelecimentos import executa_rais_estabelecimentos
 
 def executa(coll):
     '''
-    Função para download das collections, chama outras funções de acordo com
-    o parâmetro passado, se nenhum parâmetro for passado, exibe a mensagem
-    para passar uma collection como parâmetro.
+    Funcao para download das collections, chama outras funcoes de acordo com
+    o parametro passado, se nenhum parametro for passado, exibe a mensagem
+    para passar uma collection como parametro.
     ex: python download.py enade
 
     PARAMETROS:
@@ -49,7 +49,7 @@ def executa(coll):
         executa_rais_estabelecimentos()
 
     else:
-        print('Digite uma collection como parâmetro')
+        print('Digite uma collection como parametro')
 
 
 if __name__ == "__main__":

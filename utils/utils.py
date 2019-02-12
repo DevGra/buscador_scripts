@@ -23,6 +23,18 @@ def norm_keyword(palavras):
     palavras = palavras.replace(';', ',').replace('.', ',').replace('¿', 'E').replace('[', '').replace(']', '')
     return palavras.split(',')
 
+def norm_palavra_avaliacao(palavras):
+    '''função para tratar o campo NM_AREA_AVALIACAO da capes teses. Que difere um
+        pouco da função norm_keyword que é usada váris vezes em outras collections'''
+    if not isinstance(palavras, (unicode, str)):
+        return palavras
+    palavras = palavras.encode('utf8')
+    palavras = re.sub(r'\d.', '', palavras)
+    palavras = palavras.replace(';', ',').replace('.', ',').replace('¿', 'E').replace('[', '').replace(']', '').replace(' / ', '/')
+
+    return palavras
+
+
 def data_facet(data):
     try:
         data = str(data)

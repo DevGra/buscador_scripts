@@ -11,7 +11,9 @@ all_links = {
     '2015': 'https://dadosabertos.capes.gov.br/dataset/4b0780eb-5ba4-48d4-8d6a-0b77c56f2fd7/resource/332e3d8a-6764-4c16-b2b8-d10a64ccd35d/download/br-capes-btd-2013a2016-2017-12-01_2015.csv',
     '2016': 'https://dadosabertos.capes.gov.br/dataset/4b0780eb-5ba4-48d4-8d6a-0b77c56f2fd7/resource/a4a0eb59-0db1-4aa5-a13d-f0dfefd04b57/download/br-capes-btd-2013a2016-2017-12-01_2016.csv',
     '2017': 'https://dadosabertos.capes.gov.br/dataset/d920f252-9e36-4ef2-9760-c6f4611ef669/resource/bea44ea5-4233-41d8-a675-2bb9e331a003/download/ddi-br-capes-btd-2017-2018-08-01_2017.csv'
+
 }
+
 
 
 def download_capes_teses(ano):

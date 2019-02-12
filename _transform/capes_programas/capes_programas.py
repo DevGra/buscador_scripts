@@ -235,6 +235,7 @@ class CapesProgramas(object):
         #df['INSTITUICAO_ENSINO_facet'] =  df['SG_ENTIDADE_ENSINO'] + '|' + df['NM_ENTIDADE_ENSINO']
 
         df['NM_PROGRAMA_IES_exact'] = df['NM_PROGRAMA_IES']
+        df['NM_INST_GEI_exact'] = df['NM_INST_GEI']
 
 
         # Campos setados do cadastro CAPES IES

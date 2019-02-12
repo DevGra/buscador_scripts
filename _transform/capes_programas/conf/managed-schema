@@ -156,6 +156,9 @@
   <field name="AN_INICIO_CURSO" type="strings"/>
   <field name="Codigo_GEI" type="strings"/>
   <field name="CD_INST_GEI" type="strings"/>
+  <field name="NM_INST_GEI" type="strings"/>
+  <field name="NM_PROGRAMA_IES" type="strings"/>
+  <!-- <field name="NM_AREA_AVALIACAO" type="strings"/> -->
   <field name="Codigo_do_Tipo_de_Instituicao_" type="int"/>
   <field name="Codigo_Natureza_Juridica_-_GEI" type="int"/>
   <field name="CD_ORGANIZACAO_ACADEMICA_-_GEI" type="int"/>
@@ -168,12 +171,10 @@
   <field name="DT_SITUACAO_PROGRAMA_facet" type="descendent_path"/>
   <field name="INSTITUICAO_ENSINO_facet" type="descendent_path"/>
 
-  <!-- <field name="NM_PROGRAMA_IES" type="strings"/> -->
-  <!-- <field name="NM_PROGRAMA_IDIOMA" type="strings"/> -->
-
   <!-- nome dos campos de busca -->
-  <field name="NM_PROGRAMA_IES" type="string_busca_pt" indexed="true" stored="true"/>
-  <field name="CD_PROGRAMA_IES" type="string_busca_pt" indexed="true" stored="true"/> -->
+  <field name="NM_PROGRAMA_IES_exact" type="string_busca_pt" indexed="true" stored="true"/>
+  <field name="NM_AREA_AVALIACAO" type="string_busca_pt" indexed="true" stored="true"/>
+  <field name="NM_INST_GEI_exact" type="string_busca_pt" indexed="true" stored="true"/>
   <!-- <field name="NM_PROGRAMA_IDIOMA_exact" type="string_busca_pt" indexed="true" stored="true"/> -->
 
   <!-- nuvem de palavras -->
@@ -181,13 +182,13 @@
   <copyField source="NM_PROGRAMA_IES" dest="PROGRAMA_IES_nuvem_palavras"/>
   <copyField source="NM_PROGRAMA_IES" dest="PROGRAMA_IES_busca"/>
 
-  <field name="CD_PROGRAMA_IES_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
-  <copyField source="CD_PROGRAMA_IES" dest="CD_PROGRAMA_IES_nuvem_palavras"/>
-  <copyField source="CD_PROGRAMA_IES" dest="CD_PROGRAMA_IES_busca"/>
+  <field name="NM_AREA_AVALIACAO_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
+  <copyField source="NM_AREA_AVALIACAO" dest="NM_AREA_AVALIACAO_nuvem_palavras"/>
+  <copyField source="NM_AREA_AVALIACAO" dest="NM_AREA_AVALIACAO_busca"/>
 
-  <!-- <field name="PROGRAMA_IDIOMA_nuvem_palavras" type="text_en_stopword" multiValued="true" indexed="true" stored="true"/>
-  <copyField source="NM_PROGRAMA_IDIOMA" dest="PROGRAMA_IDIOMA_nuvem_palavras"/>
-  <copyField source="NM_PROGRAMA_IDIOMA" dest="PROGRAMA_IDIOMA_busca"/> -->
+  <field name="NM_INST_GEI_nuvem_palavras" type="text_pt_stopword" multiValued="true" indexed="true" stored="true"/>
+  <copyField source="NM_INST_GEI" dest="NM_INST_GEI_nuvem_palavras"/>
+  <copyField source="NM_INST_GEI" dest="NM_INST_GEI_busca"/>
 
 
   <!-- campos de texto, português,inglês e geral -->
